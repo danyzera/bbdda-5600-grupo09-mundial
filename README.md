@@ -1,11 +1,11 @@
 # Sistema de Registro y Gestión del Mundial de Fútbol
 
-**Universidad Nacional de La Matanza**
-**Materia:** 3641 – Bases de Datos Aplicada
-**Comisión:** 5600
-**Grupo:** 9
-**Docente asignado:** A definir
-**Fecha de última entrega:** -
+**Universidad Nacional de La Matanza**<br>
+**Materia:** 3641 – Bases de Datos Aplicada<br>
+**Comisión:** 5600<br>
+**Grupo:** 9<br>
+**Docente asignado:** A definir<br>
+**Fecha de última entrega:** -<br>
 
 ## Integrantes
 
@@ -14,7 +14,7 @@
 | Dugo Daniel | danyzera |
 | Gauto Gastón Santiago | GastonGauto |
 | Garbaccio Francisco Gastón | Garbaaa |
-| Andino Máximo | `completar` |
+| Andino Máximo | MaximoA04 |
 
 ---
 
@@ -27,8 +27,8 @@ Sistema centralizado, desarrollado íntegramente en **T-SQL sobre Microsoft SQL 
 | Entrega | Contenido | Estado | Ubicación |
 |---|---|---|---|
 | 1 y 2 | Informes de costos On-Premise y Cloud | Individuales (se envían por Teams) |  |
-| 3 | Diagrama de Entidad Relación | Entregada | [`doc/entrega-03_DER/`](doc/entrega-03_DER/) |
-| 4 | Instalación y configuración de SQL Server | Entregada | [`doc/entrega-04_instalacion/`](doc/entrega-04_instalacion/) |
+| 3 | Diagrama de Entidad Relación | Entregada | [`docs/entrega-03_DER/`](docs/entrega-03_DER/) |
+| 4 | Instalación y configuración de SQL Server | Entregada | [`docs/entrega-04_instalacion/`](docs/entrega-04_instalacion/) |
 | 5 | Base de datos (tablas, SPs, validaciones, lógica de negocio) | En desarrollo | [`sql/`](sql/) |
 | 6 | Procesos de importación | Pendiente | [`sql/05_importacion/`](sql/05_importacion/) |
 | 7 | Reportes | Pendiente | [`sql/06_reportes/`](sql/06_reportes/) |
@@ -43,7 +43,7 @@ Cada entrega queda marcada con un tag de Git (`entrega-03`, `entrega-04`, ...).
 /
 ├── README.md
 ├── .gitignore
-├── doc/                       Documentación por entrega, norma de nomenclatura y fuentes
+├── docs/                      Documentación por entrega, norma de nomenclatura y fuentes
 ├── sql/                       Solución de SSMS (.ssmssln) con todos los scripts
 │   ├── 01_estructura/         Base de datos, esquemas, tablas y restricciones
 │   ├── 02_abm/                SPs de alta, baja y modificación
@@ -87,7 +87,7 @@ Cada entrega queda marcada con un tag de Git (`entrega-03`, `entrega-04`, ...).
 
 ## Convenciones
 
-- **Nomenclatura** de tablas, SPs y variables: ver [`doc/norma-nomenclatura.md`](doc/norma-nomenclatura.md).
+- **Nomenclatura** de tablas, SPs y variables: ver [`docs/norma-nomenclatura.md`](docs/norma-nomenclatura.md).
 - **Scripts:** prefijo de dos dígitos para el orden de ejecución; encabezado con universidad, materia, integrantes, fecha y objetivo.
-- **Fuentes de datos, APIs y scraping** (incluyendo límites de uso): ver [`doc/fuentes-datos-y-apis.md`](doc/fuentes-datos-y-apis.md).
+- **Fuentes de datos, APIs y scraping** (incluyendo límites de uso): ver [`docs/fuentes-datos-y-apis.md`](docs/fuentes-datos-y-apis.md).
 - **Flujo de trabajo:** cada integrante trabaja con su propia cuenta de GitHub, en ramas propias y mediante pull requests.
