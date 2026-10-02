@@ -64,7 +64,7 @@ Cada entrega queda marcada con un tag de Git (`entrega-03`, `entrega-04`, ...).
 
 **Requisitos**
 
-- Microsoft SQL Server `<versión / edición>` (ver [instalación y configuración](doc/entrega-04_instalacion/)).
+- Microsoft SQL Server `<versión / edición>` (ver [instalación y configuración](docs/entrega-04_instalacion/)).
 - SQL Server Management Studio (SSMS) `<versión>`.
 - Permisos de administrador sobre la instancia.
 
