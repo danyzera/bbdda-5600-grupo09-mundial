@@ -58,7 +58,9 @@ CREATE TABLE torneo.pais (
     nombre         NVARCHAR(100)     NOT NULL,
     continente     NVARCHAR(50)      NOT NULL,
     codigo_iso     CHAR(3)           NOT NULL,
-    huso_horario   VARCHAR(100)      NOT NULL, 
+    huso_horario   VARCHAR(100)      NOT NULL,
+	pbi_per_capita DECIMAL(12,2) NULL,
+	pbi_anio SMALLINT NULL,
     CONSTRAINT PK_pais PRIMARY KEY (pais_id),
     CONSTRAINT UQ_pais_nombre UNIQUE (nombre),
     CONSTRAINT UQ_pais_codigo_iso UNIQUE (codigo_iso)
