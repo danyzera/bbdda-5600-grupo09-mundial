@@ -157,12 +157,3 @@ BEGIN
     DELETE FROM arbitraje.informe_arbitral WHERE informe_id = @informeId;
 END;
 GO
- 
-
-
-
-
-
-
-
-
