@@ -9,16 +9,6 @@
                  (torneo, arbitraje, publicidad, importacion).
    ============================================================================ */
 
-/* ============================================================================
-   Universidad : Universidad Nacional de La Matanza (UNLaM)
-   Materia     : 3641 - Bases de Datos Aplicada
-   Comision    : Com 5600 Grupo: 09
-   Integrantes : Gauto, Andino, Garbaccio, Dugo
-   Script      : 00_crear_bd_y_esquemas.sql
-   Objetivo    : Crear la base de datos MundialDB y sus esquemas
-                 (torneo, arbitraje, publicidad, importacion).
-   ============================================================================ */
-
 USE master;
 GO
 
