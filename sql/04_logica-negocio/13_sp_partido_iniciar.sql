@@ -44,7 +44,6 @@ BEGIN
             @minimoSuplentes INT;
 
     BEGIN TRY
-        BEGIN TRANSACTION;
 
         SELECT  @estadoPartido = estado,
                 @fase = fase,
@@ -152,6 +151,12 @@ BEGIN
                                 AND (seleccion_local_id IN (@idLocal, @idVisitante)
                                             OR seleccion_visitante_id IN (@idLocal, @idVisitante)))
                 SET @errores += N'- Alguna de las selecciones tiene un partido anterior sin finalizar.' + @saltoDeLinea;
+            
+            IF (    SELECT COUNT(*)
+                    FROM publicidad.publicidad_partido
+                    WHERE partido_id = @idPartido   ) <> 4
+            SET @errores += N'- El partido debe tener asignados exactamente 4 espacios publicitarios.' + @saltoDeLinea;
+
         END;
 
         IF @errores <> N''
@@ -159,6 +164,8 @@ BEGIN
             SET @errores = N'No se pudo iniciar el partido:' + @saltoDeLinea + @errores; -- Cabecera del listado de errores
             THROW 53101, @errores, 1;
         END;
+
+        BEGIN TRANSACTION; -- Realmente no es estrictamente necesario dado que en este SP solo se modifica una tabla
 
         EXEC torneo.sp_partido_modificacion
                 @partidoId = @idPartido,
