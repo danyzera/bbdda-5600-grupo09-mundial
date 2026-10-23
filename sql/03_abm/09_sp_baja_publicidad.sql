@@ -1,10 +1,10 @@
 /* ============================================================================
    Universidad : Universidad Nacional de La Matanza (UNLaM)
    Materia     : 3641 - Bases de Datos Aplicada
-   Comision    : Com____        Grupo: ____
-   Integrantes : (completar nombre y apellido de cada integrante)
+   Comision    : Com:5600      Grupo:09
+   Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 08_sp_baja_modificacion_publicidad.sql
+   Script      : 09_sp_baja_publicidad.sql
    Objetivo    : Procedimientos almacenados de BAJA del esquema publicidad.
                  Mismas convenciones que el script 06. Sin cursores ni SQL dinamico.
                  Numeros de error: baja 51301-51307, modificacion 52301-52307.
