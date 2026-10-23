@@ -34,29 +34,29 @@ BEGIN
     IF @nombre IS NULL OR LTRIM(RTRIM(@nombre)) = N''
         SET @errores += N'- El nombre es obligatorio.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.pais WHERE nombre = LTRIM(RTRIM(@nombre)))
-        SET @errores += N'- Ya existe un pa�s con ese nombre.' + @nl;
+        SET @errores += N'- Ya existe un país con ese nombre.' + @nl;
 
     IF @continente IS NULL OR LTRIM(RTRIM(@continente)) = N''
         SET @errores += N'- El continente es obligatorio.' + @nl;
 
     IF @codigoIso IS NULL OR @codigoIso NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- El c�digo ISO debe tener exactamente 3 letras.' + @nl;
+        SET @errores += N'- El código ISO debe tener exactamente 3 letras.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.pais WHERE codigo_iso = @codigoIso)
-        SET @errores += N'- Ya existe un pa�s con ese c�digo ISO.' + @nl;
+        SET @errores += N'- Ya existe un país con ese código ISO.' + @nl;
 
     IF @husoHorario IS NULL OR NOT EXISTS (SELECT 1 FROM sys.time_zone_info WHERE name = @husoHorario)
-        SET @errores += N'- El huso horario no es v�lido (usar nombres de sys.time_zone_info).' + @nl;
+        SET @errores += N'- El huso horario no es válido (usar nombres de sys.time_zone_info).' + @nl;
 
     IF @pbiPerCapita IS NOT NULL AND @pbiPerCapita <= 0
-        SET @errores += N'- El PBI per c�pita debe ser mayor a cero.' + @nl;
+        SET @errores += N'- El PBI per cápita debe ser mayor a cero.' + @nl;
     IF (@pbiPerCapita IS NULL AND @pbiAnio IS NOT NULL) OR (@pbiPerCapita IS NOT NULL AND @pbiAnio IS NULL)
-        SET @errores += N'- El PBI y su a�o deben informarse juntos.' + @nl;
+        SET @errores += N'- El PBI y su año deben informarse juntos.' + @nl;
     IF @pbiAnio IS NOT NULL AND (@pbiAnio < 1960 OR @pbiAnio > YEAR(SYSDATETIME()))
-        SET @errores += N'- El a�o del PBI est� fuera de rango.' + @nl;
+        SET @errores += N'- El año del PBI está fuera de rango.' + @nl;
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar el pa�s:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar el país:' + @nl + @errores;
         THROW 50101, @errores, 1;
     END;
 
@@ -85,7 +85,7 @@ BEGIN
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
 
     IF NOT EXISTS (SELECT 1 FROM torneo.pais WHERE pais_id = @paisId)
-        SET @errores += N'- El pa�s no existe.' + @nl;
+        SET @errores += N'- El país no existe.' + @nl;
 
     IF @nombreEstadio IS NULL OR LTRIM(RTRIM(@nombreEstadio)) = N''
         SET @errores += N'- El nombre del estadio es obligatorio.' + @nl;
@@ -99,7 +99,7 @@ BEGIN
         SET @errores += N'- La capacidad debe ser mayor a cero.' + @nl;
 
     IF @husoHorario IS NULL OR NOT EXISTS (SELECT 1 FROM sys.time_zone_info WHERE name = @husoHorario)
-        SET @errores += N'- El huso horario no es v�lido (usar nombres de sys.time_zone_info).' + @nl;
+        SET @errores += N'- El huso horario no es válido (usar nombres de sys.time_zone_info).' + @nl;
 
     IF (@latitud IS NULL AND @longitud IS NOT NULL) OR (@latitud IS NOT NULL AND @longitud IS NULL)
         SET @errores += N'- Latitud y longitud deben informarse juntas.' + @nl;
@@ -138,17 +138,17 @@ BEGIN
     DECLARE @maxGrupo INT = (SELECT valor FROM torneo.parametro_reglamento WHERE clave = 'MAX_SELECCIONES_GRUPO');
 
     IF NOT EXISTS (SELECT 1 FROM torneo.pais WHERE pais_id = @paisId)
-        SET @errores += N'- El pa�s no existe.' + @nl;
+        SET @errores += N'- El país no existe.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.seleccion WHERE pais_id = @paisId)
-        SET @errores += N'- El pa�s ya tiene una selecci�n registrada.' + @nl;
+        SET @errores += N'- El país ya tiene una selección registrada.' + @nl;
 
     IF @nombre IS NULL OR LTRIM(RTRIM(@nombre)) = N''
         SET @errores += N'- El nombre es obligatorio.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.seleccion WHERE nombre = LTRIM(RTRIM(@nombre)))
-        SET @errores += N'- Ya existe una selecci�n con ese nombre.' + @nl;
+        SET @errores += N'- Ya existe una selección con ese nombre.' + @nl;
 
     IF @confederacion IS NULL OR @confederacion NOT IN ('UEFA','CONMEBOL','CONCACAF','CAF','AFC','OFC')
-        SET @errores += N'- La confederaci�n debe ser UEFA, CONMEBOL, CONCACAF, CAF, AFC u OFC.' + @nl;
+        SET @errores += N'- La confederación debe ser UEFA, CONMEBOL, CONCACAF, CAF, AFC u OFC.' + @nl;
 
     IF @rankingFifa IS NOT NULL AND @rankingFifa <= 0
         SET @errores += N'- El ranking FIFA debe ser mayor a cero.' + @nl;
@@ -157,11 +157,11 @@ BEGIN
         SET @errores += N'- El grupo debe ser una letra entre A y L.' + @nl;
     IF @grupo IS NOT NULL AND @maxGrupo IS NOT NULL
        AND (SELECT COUNT(*) FROM torneo.seleccion WHERE grupo = @grupo) >= @maxGrupo
-        SET @errores += N'- El grupo ya alcanz� el m�ximo de selecciones permitido.' + @nl;
+        SET @errores += N'- El grupo ya alcanzó el máximo de selecciones permitido.' + @nl;
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar la selecci�n:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar la selección:' + @nl + @errores;
         THROW 50103, @errores, 1;
     END;
 
@@ -187,25 +187,25 @@ BEGIN
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
 
     IF NOT EXISTS (SELECT 1 FROM torneo.seleccion WHERE seleccion_id = @seleccionId)
-        SET @errores += N'- La selecci�n no existe.' + @nl;
+        SET @errores += N'- La selección no existe.' + @nl;
 
     IF @nombre IS NULL OR LTRIM(RTRIM(@nombre)) = N''
         SET @errores += N'- El nombre es obligatorio.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.cuerpo_tecnico
                WHERE seleccion_id = @seleccionId AND nombre = LTRIM(RTRIM(@nombre)))
-        SET @errores += N'- La persona ya integra el cuerpo t�cnico de esa selecci�n.' + @nl;
+        SET @errores += N'- La persona ya integra el cuerpo técnico de esa selección.' + @nl;
 
     IF @rol IS NULL OR @rol NOT IN ('DT','AT','PF')
         SET @errores += N'- El rol debe ser DT, AT o PF.' + @nl;
     IF @rol = 'DT' AND EXISTS (SELECT 1 FROM torneo.cuerpo_tecnico WHERE seleccion_id = @seleccionId AND rol = 'DT')
-        SET @errores += N'- La selecci�n ya tiene un director t�cnico.' + @nl;
+        SET @errores += N'- La selección ya tiene un director técnico.' + @nl;
 
     IF @nacionalidad IS NULL OR LTRIM(RTRIM(@nacionalidad)) = N''
         SET @errores += N'- La nacionalidad es obligatoria.' + @nl;
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar el integrante del cuerpo t�cnico:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar el integrante del cuerpo técnico:' + @nl + @errores;
         THROW 50104, @errores, 1;
     END;
 
@@ -237,14 +237,14 @@ BEGIN
         SET @errores += N'- La fecha de nacimiento es obligatoria.' + @nl;
     IF @fechaNacimiento IS NOT NULL
        AND (@fechaNacimiento > CAST(SYSDATETIME() AS DATE) OR @fechaNacimiento < '19000101')
-        SET @errores += N'- La fecha de nacimiento est� fuera de rango.' + @nl;
+        SET @errores += N'- La fecha de nacimiento está fuera de rango.' + @nl;
 
     IF EXISTS (SELECT 1 FROM torneo.jugador
                WHERE nombre = LTRIM(RTRIM(@nombre)) AND fecha_nacimiento = @fechaNacimiento)
         SET @errores += N'- Ya existe un jugador con el mismo nombre y fecha de nacimiento.' + @nl;
 
     IF @posicion IS NULL OR @posicion NOT IN ('ARQ','DEF','MED','DEL')
-        SET @errores += N'- La posici�n debe ser ARQ, DEF, MED o DEL.' + @nl;
+        SET @errores += N'- La posición debe ser ARQ, DEF, MED o DEL.' + @nl;
 
     IF @errores <> N''
     BEGIN
@@ -275,7 +275,7 @@ BEGIN
     DECLARE @maxConvocados INT = (SELECT valor FROM torneo.parametro_reglamento WHERE clave = 'MAX_CONVOCADOS');
 
     IF NOT EXISTS (SELECT 1 FROM torneo.seleccion WHERE seleccion_id = @seleccionId)
-        SET @errores += N'- La selecci�n no existe.' + @nl;
+        SET @errores += N'- La selección no existe.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorId)
         SET @errores += N'- El jugador no existe.' + @nl;
@@ -286,16 +286,16 @@ BEGIN
         SET @errores += N'- El dorsal debe estar entre 1 y 99.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.convocatoria
                WHERE seleccion_id = @seleccionId AND dorsal = @dorsal AND estado = 'VIGENTE')
-        SET @errores += N'- El dorsal ya est� asignado a otro convocado de la selecci�n.' + @nl;
+        SET @errores += N'- El dorsal ya está asignado a otro convocado de la selección.' + @nl;
 
     IF @fechaConvocatoria IS NULL
         SET @errores += N'- La fecha de convocatoria es obligatoria.' + @nl;
 
     IF @maxConvocados IS NULL
-        SET @errores += N'- Falta configurar el par�metro MAX_CONVOCADOS en el reglamento.' + @nl;
+        SET @errores += N'- Falta configurar el parámetro MAX_CONVOCADOS en el reglamento.' + @nl;
     IF @maxConvocados IS NOT NULL
        AND (SELECT COUNT(*) FROM torneo.convocatoria WHERE seleccion_id = @seleccionId AND estado = 'VIGENTE') >= @maxConvocados
-        SET @errores += N'- La selecci�n ya alcanz� el m�ximo de convocados permitido.' + @nl;
+        SET @errores += N'- La selección ya alcanzó el máximo de convocados permitido.' + @nl;
 
     IF @errores <> N''
     BEGIN
@@ -326,17 +326,17 @@ BEGIN
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
 
     IF NOT EXISTS (SELECT 1 FROM torneo.seleccion WHERE seleccion_id = @seleccionId)
-        SET @errores += N'- La selecci�n no existe.' + @nl;
+        SET @errores += N'- La selección no existe.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorBajaId)
         SET @errores += N'- El jugador de baja no existe.' + @nl;
     IF NOT EXISTS (SELECT 1 FROM torneo.convocatoria WHERE seleccion_id = @seleccionId AND jugador_id = @jugadorBajaId)
-        SET @errores += N'- El jugador de baja no pertenece al plantel de la selecci�n.' + @nl;
+        SET @errores += N'- El jugador de baja no pertenece al plantel de la selección.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorAltaId)
         SET @errores += N'- El jugador de alta no existe.' + @nl;
     IF NOT EXISTS (SELECT 1 FROM torneo.convocatoria WHERE seleccion_id = @seleccionId AND jugador_id = @jugadorAltaId)
-        SET @errores += N'- El jugador de alta no pertenece al plantel de la selecci�n.' + @nl;
+        SET @errores += N'- El jugador de alta no pertenece al plantel de la selección.' + @nl;
 
     IF @jugadorBajaId = @jugadorAltaId
         SET @errores += N'- El jugador de baja y el de alta deben ser distintos.' + @nl;
@@ -384,16 +384,16 @@ BEGIN
     SELECT @grupoVisitante = grupo FROM torneo.seleccion WHERE seleccion_id = @seleccionVisitanteId;
 
     IF @fase IS NULL OR @fase NOT IN ('GRUPOS','DIECISEISAVOS','OCTAVOS','CUARTOS','SEMIFINAL','TERCER_PUESTO','FINAL')
-        SET @errores += N'- La fase no es v�lida.' + @nl;
+        SET @errores += N'- La fase no es válida.' + @nl;
 
     IF @huso IS NULL
         SET @errores += N'- La sede no existe.' + @nl;
     IF NOT EXISTS (SELECT 1 FROM torneo.seleccion WHERE seleccion_id = @seleccionLocalId)
-        SET @errores += N'- La selecci�n local no existe.' + @nl;
+        SET @errores += N'- La selección local no existe.' + @nl;
     IF NOT EXISTS (SELECT 1 FROM torneo.seleccion WHERE seleccion_id = @seleccionVisitanteId)
-        SET @errores += N'- La selecci�n visitante no existe.' + @nl;
+        SET @errores += N'- La selección visitante no existe.' + @nl;
     IF @seleccionLocalId = @seleccionVisitanteId
-        SET @errores += N'- La selecci�n local y la visitante deben ser distintas.' + @nl;
+        SET @errores += N'- La selección local y la visitante deben ser distintas.' + @nl;
 
     IF @fechaHoraLocal IS NULL
         SET @errores += N'- La fecha y hora local son obligatorias.' + @nl;
@@ -415,14 +415,14 @@ BEGIN
        AND EXISTS (SELECT 1 FROM torneo.partido
                    WHERE sede_id = @sedeId
                      AND ABS(DATEDIFF(MINUTE, fecha_hora_utc, @fechaHoraUtc)) < @minSede)
-        SET @errores += N'- La sede ya tiene un partido en un rango menor al margen m�nimo permitido.' + @nl;
+        SET @errores += N'- La sede ya tiene un partido en un rango menor al margen mínimo permitido.' + @nl;
 
     IF @fechaHoraUtc IS NOT NULL
        AND EXISTS (SELECT 1 FROM torneo.partido
                    WHERE (seleccion_local_id IN (@seleccionLocalId, @seleccionVisitanteId)
                        OR seleccion_visitante_id IN (@seleccionLocalId, @seleccionVisitanteId))
                      AND ABS(DATEDIFF(MINUTE, fecha_hora_utc, @fechaHoraUtc)) < @minSeleccion)
-        SET @errores += N'- Alguna de las selecciones juega otro partido sin el descanso m�nimo requerido.' + @nl;
+        SET @errores += N'- Alguna de las selecciones juega otro partido sin el descanso mínimo requerido.' + @nl;
 
     IF @errores <> N''
     BEGIN
@@ -456,21 +456,21 @@ BEGIN
         SET @errores += N'- El partido no existe.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.seleccion WHERE seleccion_id = @seleccionId)
-        SET @errores += N'- La selecci�n no existe.' + @nl;
+        SET @errores += N'- La selección no existe.' + @nl;
     IF NOT EXISTS (SELECT 1 FROM torneo.partido
                    WHERE partido_id = @partidoId
                      AND @seleccionId IN (seleccion_local_id, seleccion_visitante_id))
-        SET @errores += N'- La selecci�n no participa de ese partido.' + @nl;
+        SET @errores += N'- La selección no participa de ese partido.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.formacion_partido WHERE partido_id = @partidoId AND seleccion_id = @seleccionId)
-        SET @errores += N'- La selecci�n ya tiene formaci�n cargada para ese partido.' + @nl;
+        SET @errores += N'- La selección ya tiene formación cargada para ese partido.' + @nl;
 
     IF @esquema IS NULL OR LEN(@esquema) > 10
        OR @esquema NOT LIKE '[0-9]-%' OR @esquema LIKE '%[^0-9-]%'
-        SET @errores += N'- El esquema debe tener formato num�rico separado por guiones (ej. 4-3-3).' + @nl;
+        SET @errores += N'- El esquema debe tener formato numérico separado por guiones (ej. 4-3-3).' + @nl;
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar la formaci�n:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar la formación:' + @nl + @errores;
         THROW 50109, @errores, 1;
     END;
 
@@ -504,40 +504,40 @@ BEGIN
     WHERE f.formacion_id = @formacionId;
 
     IF @partidoId IS NULL
-        SET @errores += N'- La formaci�n no existe.' + @nl;
+        SET @errores += N'- La formación no existe.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorId)
         SET @errores += N'- El jugador no existe.' + @nl;
     IF @partidoId IS NOT NULL
        AND NOT EXISTS (SELECT 1 FROM torneo.convocatoria
                        WHERE jugador_id = @jugadorId AND seleccion_id = @seleccionId AND estado = 'VIGENTE')
-        SET @errores += N'- El jugador no est� convocado (vigente) por la selecci�n de esta formaci�n.' + @nl;
+        SET @errores += N'- El jugador no está convocado (vigente) por la selección de esta formación.' + @nl;
 
     IF @partidoId IS NOT NULL
        AND EXISTS (SELECT 1 FROM torneo.alineacion_detalle ad
                    JOIN torneo.formacion_partido f ON f.formacion_id = ad.formacion_id
                    WHERE f.partido_id = @partidoId AND ad.jugador_id = @jugadorId)
-        SET @errores += N'- El jugador ya figura en la alineaci�n de este partido.' + @nl;
+        SET @errores += N'- El jugador ya figura en la alineación de este partido.' + @nl;
 
     IF @fechaPartido IS NOT NULL
        AND EXISTS (SELECT 1 FROM torneo.suspension
                    WHERE jugador_id = @jugadorId
                      AND partidos_cumplidos < partidos_suspendidos
                      AND fecha_inicio < @fechaPartido)
-        SET @errores += N'- El jugador tiene una suspensi�n vigente y no puede ser incluido.' + @nl;
+        SET @errores += N'- El jugador tiene una suspensión vigente y no puede ser incluido.' + @nl;
 
     IF @esTitular IS NULL
         SET @errores += N'- Debe indicarse si el jugador es titular o suplente.' + @nl;
     IF @esTitular = 1
        AND (SELECT COUNT(*) FROM torneo.alineacion_detalle WHERE formacion_id = @formacionId AND es_titular = 1) >= 11
-        SET @errores += N'- La formaci�n ya tiene 11 titulares.' + @nl;
+        SET @errores += N'- La formación ya tiene 11 titulares.' + @nl;
     IF @esTitular = 0 AND @maxSuplentes IS NOT NULL
        AND (SELECT COUNT(*) FROM torneo.alineacion_detalle WHERE formacion_id = @formacionId AND es_titular = 0) >= @maxSuplentes
-        SET @errores += N'- La formaci�n ya alcanz� el m�ximo de suplentes permitido.' + @nl;
+        SET @errores += N'- La formación ya alcanzó el máximo de suplentes permitido.' + @nl;
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar el jugador en la alineaci�n:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar el jugador en la alineación:' + @nl + @errores;
         THROW 50110, @errores, 1;
     END;
 
@@ -578,13 +578,13 @@ BEGIN
     WHERE partido_id = @partidoId AND seleccion_id = @seleccionId;
 
     IF @maxRegular IS NULL OR @maxSuplementario IS NULL OR @maxVentanas IS NULL
-        SET @errores += N'- Faltan par�metros del reglamento (MAX_CAMBIOS_REGULAR, MAX_CAMBIOS_SUPLEMENTARIO o MAX_VENTANAS).' + @nl;
+        SET @errores += N'- Faltan parámetros del reglamento (MAX_CAMBIOS_REGULAR, MAX_CAMBIOS_SUPLEMENTARIO o MAX_VENTANAS).' + @nl;
 
     IF @fase IS NULL
         SET @errores += N'- El partido no existe.' + @nl;
     IF NOT EXISTS (SELECT 1 FROM torneo.partido
                    WHERE partido_id = @partidoId AND @seleccionId IN (seleccion_local_id, seleccion_visitante_id))
-        SET @errores += N'- La selecci�n no participa de ese partido.' + @nl;
+        SET @errores += N'- La selección no participa de ese partido.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorSaleId)
         SET @errores += N'- El jugador que sale no existe.' + @nl;
@@ -593,7 +593,7 @@ BEGIN
     IF @jugadorSaleId = @jugadorEntraId
         SET @errores += N'- El jugador que sale y el que entra deben ser distintos.' + @nl;
 
-    -- El que sale debe estar en cancha: titular, o suplente que ya ingres�, y no haber salido antes
+    -- El que sale debe estar en cancha: titular, o suplente que ya ingresó, y no haber salido antes
     IF NOT EXISTS (SELECT 1
                    FROM torneo.alineacion_detalle ad
                    JOIN torneo.formacion_partido f ON f.formacion_id = ad.formacion_id
@@ -602,9 +602,9 @@ BEGIN
                      AND (ad.es_titular = 1
                           OR EXISTS (SELECT 1 FROM torneo.cambio c
                                      WHERE c.partido_id = @partidoId AND c.jugador_entra_id = @jugadorSaleId)))
-        SET @errores += N'- El jugador que sale no est� en cancha para esa selecci�n.' + @nl;
+        SET @errores += N'- El jugador que sale no está en cancha para esa selección.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.cambio WHERE partido_id = @partidoId AND jugador_sale_id = @jugadorSaleId)
-        SET @errores += N'- El jugador que sale ya hab�a sido reemplazado.' + @nl;
+        SET @errores += N'- El jugador que sale ya había sido reemplazado.' + @nl;
 
     -- El que entra debe estar en el banco y no haber participado antes de un cambio
     IF NOT EXISTS (SELECT 1
@@ -612,11 +612,11 @@ BEGIN
                    JOIN torneo.formacion_partido f ON f.formacion_id = ad.formacion_id
                    WHERE f.partido_id = @partidoId AND f.seleccion_id = @seleccionId
                      AND ad.jugador_id = @jugadorEntraId AND ad.es_titular = 0)
-        SET @errores += N'- El jugador que entra no est� en el banco de suplentes de esa selecci�n.' + @nl;
+        SET @errores += N'- El jugador que entra no está en el banco de suplentes de esa selección.' + @nl;
     IF EXISTS (SELECT 1 FROM torneo.cambio
                WHERE partido_id = @partidoId
                  AND (jugador_entra_id = @jugadorEntraId OR jugador_sale_id = @jugadorEntraId))
-        SET @errores += N'- El jugador que entra ya particip� de otro cambio en este partido.' + @nl;
+        SET @errores += N'- El jugador que entra ya participó de otro cambio en este partido.' + @nl;
 
     IF @minuto IS NULL OR @minuto NOT BETWEEN 1 AND 130
         SET @errores += N'- El minuto debe estar entre 1 y 130.' + @nl;
@@ -626,21 +626,21 @@ BEGIN
         SET @errores += N'- Debe indicarse si el cambio es en tiempo suplementario.' + @nl;
 
     IF @esSuplementario = 0 AND @maxRegular IS NOT NULL AND @cantRegular >= @maxRegular
-        SET @errores += N'- La selecci�n ya us� el m�ximo de cambios del tiempo regular.' + @nl;
+        SET @errores += N'- La selección ya usó el máximo de cambios del tiempo regular.' + @nl;
     IF @esSuplementario = 0 AND @maxVentanas IS NOT NULL
        AND (@ventana IS NULL OR @ventana NOT BETWEEN 1 AND @maxVentanas)
-        SET @errores += N'- La ventana de cambios es inv�lida para el tiempo regular.' + @nl;
+        SET @errores += N'- La ventana de cambios es inválida para el tiempo regular.' + @nl;
     IF @esSuplementario = 0 AND @maxVentanas IS NOT NULL AND @otrasVentanas >= @maxVentanas
-        SET @errores += N'- Se superar�a el m�ximo de ventanas de cambio permitido.' + @nl;
+        SET @errores += N'- Se superaría el máximo de ventanas de cambio permitido.' + @nl;
 
     IF @esSuplementario = 1 AND @maxSuplementario IS NOT NULL AND @cantSuplementario >= @maxSuplementario
-        SET @errores += N'- La selecci�n ya us� el cambio adicional del tiempo suplementario.' + @nl;
+        SET @errores += N'- La selección ya usó el cambio adicional del tiempo suplementario.' + @nl;
     IF @esSuplementario = 1 AND @fase = 'GRUPOS'
         SET @errores += N'- No hay tiempo suplementario en la fase de grupos.' + @nl;
     IF @esSuplementario = 1 AND @minuto <= 90
-        SET @errores += N'- Un cambio suplementario debe ocurrir despu�s del minuto 90.' + @nl;
+        SET @errores += N'- Un cambio suplementario debe ocurrir después del minuto 90.' + @nl;
     IF @esSuplementario = 1 AND @maxVentanas IS NOT NULL AND (@ventana IS NULL OR @ventana <> @maxVentanas + 1)
-        SET @errores += N'- La ventana del cambio suplementario debe ser la siguiente al m�ximo regular.' + @nl;
+        SET @errores += N'- La ventana del cambio suplementario debe ser la siguiente al máximo regular.' + @nl;
 
     IF @errores <> N''
     BEGIN
@@ -685,9 +685,9 @@ BEGIN
     IF @estado IS NULL
         SET @errores += N'- El partido no existe.' + @nl;
     IF @estado = 'PROGRAMADO'
-        SET @errores += N'- El partido todav�a no comenz�; no se pueden cargar goles.' + @nl;
+        SET @errores += N'- El partido todavía no comenzó; no se pueden cargar goles.' + @nl;
     IF @estado IS NOT NULL AND @seleccionId NOT IN (@localId, @visitanteId)
-        SET @errores += N'- La selecci�n no participa de ese partido.' + @nl;
+        SET @errores += N'- La selección no participa de ese partido.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorId)
         SET @errores += N'- El jugador no existe.' + @nl;
@@ -696,27 +696,27 @@ BEGIN
                        JOIN torneo.formacion_partido f ON f.formacion_id = ad.formacion_id
                        WHERE f.partido_id = @partidoId AND f.seleccion_id = @seleccionAutorId
                          AND ad.jugador_id = @jugadorId)
-        SET @errores += N'- El autor del gol no figura en la alineaci�n de la selecci�n correspondiente.' + @nl;
+        SET @errores += N'- El autor del gol no figura en la alineación de la selección correspondiente.' + @nl;
 
     IF @jugadorAsistenteId IS NOT NULL
        AND NOT EXISTS (SELECT 1 FROM torneo.alineacion_detalle ad
                        JOIN torneo.formacion_partido f ON f.formacion_id = ad.formacion_id
                        WHERE f.partido_id = @partidoId AND f.seleccion_id = @seleccionId
                          AND ad.jugador_id = @jugadorAsistenteId)
-        SET @errores += N'- El asistente no figura en la alineaci�n de la selecci�n que convierte.' + @nl;
+        SET @errores += N'- El asistente no figura en la alineación de la selección que convierte.' + @nl;
     IF @jugadorAsistenteId IS NOT NULL AND @tipoGol IN ('EN_CONTRA','PENAL')
         SET @errores += N'- Ese tipo de gol no admite asistencia.' + @nl;
 
     IF @minuto IS NULL OR @minuto NOT BETWEEN 1 AND 130
         SET @errores += N'- El minuto debe estar entre 1 y 130.' + @nl;
     IF @tipoGol IS NULL OR @tipoGol NOT IN ('JUGADA','PENAL','TIRO_LIBRE','EN_CONTRA','CABEZAZO')
-        SET @errores += N'- El tipo de gol no es v�lido.' + @nl;
+        SET @errores += N'- El tipo de gol no es válido.' + @nl;
     IF @periodo IS NULL OR @periodo NOT IN ('PRIMER_TIEMPO','SEGUNDO_TIEMPO','ADICIONAL','ALARGUE','PENALES')
-        SET @errores += N'- El per�odo no es v�lido.' + @nl;
+        SET @errores += N'- El período no es válido.' + @nl;
     IF @periodo IN ('ALARGUE','PENALES') AND @fase = 'GRUPOS'
-        SET @errores += N'- La fase de grupos no tiene alargue ni definici�n por penales.' + @nl;
+        SET @errores += N'- La fase de grupos no tiene alargue ni definición por penales.' + @nl;
     IF @periodo = 'ALARGUE' AND @minuto <= 90
-        SET @errores += N'- Un gol de alargue debe ocurrir despu�s del minuto 90.' + @nl;
+        SET @errores += N'- Un gol de alargue debe ocurrir después del minuto 90.' + @nl;
 
     IF @errores <> N''
     BEGIN
@@ -757,7 +757,7 @@ BEGIN
     IF @estado IS NULL
         SET @errores += N'- El partido no existe.' + @nl;
     IF @estado = 'PROGRAMADO'
-        SET @errores += N'- El partido todav�a no comenz�; no se pueden cargar tarjetas.' + @nl;
+        SET @errores += N'- El partido todavía no comenzó; no se pueden cargar tarjetas.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorId)
         SET @errores += N'- El jugador no existe.' + @nl;
@@ -765,7 +765,7 @@ BEGIN
        AND NOT EXISTS (SELECT 1 FROM torneo.alineacion_detalle ad
                        JOIN torneo.formacion_partido f ON f.formacion_id = ad.formacion_id
                        WHERE f.partido_id = @partidoId AND ad.jugador_id = @jugadorId)
-        SET @errores += N'- El jugador no figura en la alineaci�n de ese partido.' + @nl;
+        SET @errores += N'- El jugador no figura en la alineación de ese partido.' + @nl;
 
     IF @tipo IS NULL OR @tipo NOT IN ('AMARILLA','ROJA')
         SET @errores += N'- El tipo debe ser AMARILLA o ROJA.' + @nl;
@@ -780,7 +780,7 @@ BEGIN
     IF @minutoRoja IS NOT NULL AND @tipo = 'ROJA'
         SET @errores += N'- El jugador ya fue expulsado en este partido.' + @nl;
     IF @minutoRoja IS NOT NULL AND @tipo = 'AMARILLA' AND @minuto > @minutoRoja
-        SET @errores += N'- No se pueden registrar amarillas posteriores a la expulsi�n del jugador.' + @nl;
+        SET @errores += N'- No se pueden registrar amarillas posteriores a la expulsión del jugador.' + @nl;
     IF @tipo = 'AMARILLA' AND @cantAmarillas >= 2
         SET @errores += N'- El jugador ya tiene 2 amarillas en este partido.' + @nl;
     IF @tipo = 'ROJA' AND @origenRoja = 'DOBLE_AMARILLA' AND @cantAmarillas < 2
@@ -823,7 +823,7 @@ BEGIN
         SET @errores += N'- La tarjeta de origen no existe o no pertenece al jugador.' + @nl;
     IF @tarjetaOrigenId IS NOT NULL
        AND EXISTS (SELECT 1 FROM torneo.suspension WHERE tarjeta_origen_id = @tarjetaOrigenId)
-        SET @errores += N'- Ya existe una suspensi�n originada en esa tarjeta.' + @nl;
+        SET @errores += N'- Ya existe una suspensión originada en esa tarjeta.' + @nl;
 
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = N''
         SET @errores += N'- El motivo es obligatorio.' + @nl;
@@ -838,7 +838,7 @@ BEGIN
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar la suspensi�n:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar la suspensión:' + @nl + @errores;
         THROW 50114, @errores, 1;
     END;
 
@@ -872,7 +872,7 @@ BEGIN
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar el par�metro de reglamento:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar el parámetro de reglamento:' + @nl + @errores;
         THROW 50115, @errores, 1;
     END;
 
