@@ -32,6 +32,7 @@ parámetros y variables de T-SQL, los códigos de error y los archivos del repos
 | SP de ABM | `<esquema>.sp_<tabla>_<alta\|baja\|modificacion>` | `torneo.sp_pais_alta` |
 | SP de lógica de negocio | `<esquema>.sp_<entidad>_<verbo en infinitivo>` | `torneo.sp_partido_cerrar` |
 | Parámetro / variable | `@camelCase` | `@codigoIso` |
+| Tabla en memoria | `@PascalCase` | `@SuspensionesParaActualizar` |
 | Valor de dominio | `MAYUSCULAS_CON_GUION_BAJO` | `TERCER_PUESTO` |
 | Código de error | `50000 + operación·1000 + esquema·100 + orden` | `50203` |
 
