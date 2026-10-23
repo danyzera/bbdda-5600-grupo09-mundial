@@ -40,7 +40,7 @@ BEGIN
                 @seleccionAutorId   INT;
 
     BEGIN TRY
-        BEGIN TRANSACTION;
+        -- BEGIN TRANSACTION;
 
         SELECT @estadoPartido   = estado,
                @localId         = seleccion_local_id,
@@ -88,6 +88,8 @@ BEGIN
             SET @errores = N'No se puede procesar el registro del gol:' + @saltoDeLinea + @errores;
             THROW 53102, @errores, 1;
         END;
+
+        BEGIN TRANSACTION; -- Realmente no es estrictamente necesario dado que en este SP solo se modifica una tabla
 
         EXEC torneo.sp_gol_alta 
             @partidoId          = @partidoId,
