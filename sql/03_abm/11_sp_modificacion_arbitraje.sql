@@ -1,10 +1,10 @@
 /* ============================================================================
    Universidad : Universidad Nacional de La Matanza (UNLaM)
    Materia     : 3641 - Bases de Datos Aplicada
-   Comision    : Com____        Grupo: ____
-   Integrantes : (completar nombre y apellido de cada integrante)
+   Comision    : Com:5600      Grupo:09
+   Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 07_sp_baja_modificacion_arbitraje.sql
+   Script      : 11_sp_modificacion_arbitraje.sql
    Objetivo    : Procedimientos almacenados de MODIFICACION del esquema arbitraje.
                  Mismas convenciones que el script 06. Sin cursores ni SQL dinamico.
                  Numeros de error: baja 51201-51205, modificacion 52201-52205.

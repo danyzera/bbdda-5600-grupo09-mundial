@@ -4,10 +4,12 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 17/10/2026
-   Script      : fn_obtener_alineacion_actual.sql
-   Objetivo    : Función que retorna una tabla con el equipo en cancha de una
-                de las dos selecciones en un partido dado, conociendo el minuto
-                sobre el cual se desea informar.
+   Script      : 02_crear_funciones_reutilizables.sql
+   Objetivo    : Funciones que retornan valores reutilizables, por ejemplo, en
+                la implementación de los procedimientos almacenados. Al degradarse
+                la performance en caso de no ser de una única línea de retorno, se
+                fomenta que sean inliners para que el query optimizer no tenga
+                problemas y no se provoquen penalizaciones en la performance.
    ============================================================================ */
 
 Use MundialDB;
@@ -53,30 +55,36 @@ RETURN
     FROM alineacionPlanteada AS ap
     WHERE
         -- Titular o entra por cambio
+        (
             ap.esTitular = 1
-                    OR EXISTS (
-                            SELECT 1
-                            FROM cambiosHastaMomento AS c
-                            WHERE c.jugador_entra_id = ap.jugador_id )
+            OR EXISTS (
+                    SELECT 1
+                    FROM cambiosHastaMomento AS c
+                    WHERE c.idJugadorEntra = ap.idJugador )
+        )
 
         -- No lo sustituyeron
-                    AND NOT EXISTS (
-                            SELECT 1
-                            FROM cambiosHastaMomento AS c
-                            WHERE c.idJugadorSale = ap.idJugador
-                    )
+        AND NOT EXISTS (
+                SELECT 1
+                FROM cambiosHastaMomento AS c
+                WHERE c.idJugadorSale = ap.idJugador
+        )
 
         -- No fue expulsado hasta el instante consultado
-                    AND NOT EXISTS (
-                            SELECT 1
-                            FROM torneo.tarjeta AS t
-                            WHERE t.partido_id = @idPartido
-                                    AND t.jugador_id = ap.jugador_id
-                                    AND t.tipo = 'ROJA'
-                                    AND t.minuto <= @minutoConsultado
-                    )
+        AND NOT EXISTS (
+                SELECT 1
+                FROM torneo.tarjeta AS t
+                WHERE t.partido_id = @idPartido
+                        AND t.jugador_id = ap.jugador_id
+                        AND t.tipo = 'ROJA'
+                        AND t.minuto <= @minutoConsultado
+        )
 );
 GO
+
+-- CONTINUAR CON LAS DEMÁS
+
 -- torneo.obtener_tabla_grupo
--- torneo.obtener_goleadores_global
+-- torneo.obtener_goleadores_global (quizás debería ser una vista)
+-- torneo.obtener_resultado_en_vivo?
 -- publicidad.obtener_cotizacion?

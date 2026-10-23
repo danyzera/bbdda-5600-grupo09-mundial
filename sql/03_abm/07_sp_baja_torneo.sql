@@ -1,10 +1,10 @@
 /* ============================================================================
    Universidad : Universidad Nacional de La Matanza (UNLaM)
    Materia     : 3641 - Bases de Datos Aplicada
-   Comision    : Com____        Grupo: ____
-   Integrantes : (completar nombre y apellido de cada integrante)
+   Comision    : Com:5600      Grupo:09
+   Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 06_sp_baja_modificacion_torneo.sql
+   Script      : 07_sp_baja_torneo.sql
    Objetivo    : Procedimientos almacenados de BAJA del esquema torneo.
 
    CONVENCIONES

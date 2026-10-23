@@ -2,9 +2,9 @@
    Universidad : Universidad Nacional de La Matanza (UNLaM)
    Materia     : 3641 - Bases de Datos Aplicada
    Comision    : Com:5600      Grupo:09
-   Integrantes : 
+   Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 02_sp_alta_torneo.sql
+   Script      : 04_sp_alta_torneo.sql
    Objetivo    : Procedimientos almacenados de ALTA del esquema torneo.
    ============================================================================ */
 

@@ -2,9 +2,9 @@
    Universidad : Universidad Nacional de La Matanza (UNLaM)
    Materia     : 3641 - Bases de Datos Aplicada
    Comision    : Com:5600       Grupo:09
-   Integrantes :
+   Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 04_sp_alta_publicidad.sql
+   Script      : 06_sp_alta_publicidad.sql
    Objetivo    : Procedimientos almacenados de ALTA del esquema publicidad.
                  Numeros de error: 50301-50307.
    ============================================================================ */
@@ -34,13 +34,13 @@ BEGIN
         SET @errores += N'- El nombre es obligatorio.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.pais WHERE pais_id = @paisId)
-        SET @errores += N'- El país no existe.' + @nl;
+        SET @errores += N'- El paï¿½s no existe.' + @nl;
 
     IF EXISTS (SELECT 1 FROM publicidad.anunciante WHERE nombre = LTRIM(RTRIM(@nombre)) AND pais_id = @paisId)
-        SET @errores += N'- Ya existe un anunciante con ese nombre en ese país.' + @nl;
+        SET @errores += N'- Ya existe un anunciante con ese nombre en ese paï¿½s.' + @nl;
 
     IF @email IS NOT NULL AND @email NOT LIKE '%_@_%._%'
-        SET @errores += N'- El e-mail no tiene un formato válido.' + @nl;
+        SET @errores += N'- El e-mail no tiene un formato vï¿½lido.' + @nl;
     IF @email IS NOT NULL AND EXISTS (SELECT 1 FROM publicidad.anunciante WHERE email = LTRIM(RTRIM(@email)))
         SET @errores += N'- Ya existe un anunciante con ese e-mail.' + @nl;
 
@@ -80,13 +80,13 @@ BEGIN
         SET @errores += N'- El nombre es obligatorio.' + @nl;
     IF EXISTS (SELECT 1 FROM publicidad.campania
                WHERE anunciante_id = @anuncianteId AND nombre = LTRIM(RTRIM(@nombre)))
-        SET @errores += N'- El anunciante ya tiene una campaña con ese nombre.' + @nl;
+        SET @errores += N'- El anunciante ya tiene una campaï¿½a con ese nombre.' + @nl;
 
     IF @presupuesto IS NULL OR @presupuesto < 0
         SET @errores += N'- El presupuesto debe ser mayor o igual a cero.' + @nl;
 
     IF @moneda IS NULL OR @moneda NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- La moneda debe ser un código de 3 letras (ej. USD).' + @nl;
+        SET @errores += N'- La moneda debe ser un cï¿½digo de 3 letras (ej. USD).' + @nl;
 
     IF @fechaInicio IS NULL OR @fechaFin IS NULL
         SET @errores += N'- Las fechas de inicio y fin son obligatorias.' + @nl;
@@ -95,7 +95,7 @@ BEGIN
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar la campaña:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar la campaï¿½a:' + @nl + @errores;
         THROW 50302, @errores, 1;
     END;
 
@@ -120,13 +120,13 @@ BEGIN
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
 
     IF NOT EXISTS (SELECT 1 FROM publicidad.campania WHERE campania_id = @campaniaId)
-        SET @errores += N'- La campaña no existe.' + @nl;
+        SET @errores += N'- La campaï¿½a no existe.' + @nl;
 
     IF @nombre IS NULL OR LTRIM(RTRIM(@nombre)) = N''
         SET @errores += N'- El nombre es obligatorio.' + @nl;
     IF EXISTS (SELECT 1 FROM publicidad.pieza_publicitaria
                WHERE campania_id = @campaniaId AND nombre = LTRIM(RTRIM(@nombre)))
-        SET @errores += N'- La campaña ya tiene una pieza con ese nombre.' + @nl;
+        SET @errores += N'- La campaï¿½a ya tiene una pieza con ese nombre.' + @nl;
 
     IF @idioma IS NULL OR LTRIM(RTRIM(@idioma)) = N''
         SET @errores += N'- El idioma es obligatorio.' + @nl;
@@ -158,13 +158,13 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM publicidad.pieza_publicitaria WHERE pieza_id = @piezaId)
         SET @errores += N'- La pieza no existe.' + @nl;
     IF NOT EXISTS (SELECT 1 FROM torneo.pais WHERE pais_id = @paisId)
-        SET @errores += N'- El país no existe.' + @nl;
+        SET @errores += N'- El paï¿½s no existe.' + @nl;
     IF EXISTS (SELECT 1 FROM publicidad.pieza_pais WHERE pieza_id = @piezaId AND pais_id = @paisId)
-        SET @errores += N'- La pieza ya está dirigida a ese país.' + @nl;
+        SET @errores += N'- La pieza ya estï¿½ dirigida a ese paï¿½s.' + @nl;
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo asociar la pieza al país:' + @nl + @errores;
+        SET @errores = N'No se pudo asociar la pieza al paï¿½s:' + @nl + @errores;
         THROW 50304, @errores, 1;
     END;
 
@@ -188,7 +188,7 @@ BEGIN
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
 
     IF @fase IS NULL OR @fase NOT IN ('GRUPOS','DIECISEISAVOS','OCTAVOS','CUARTOS','SEMIFINAL','TERCER_PUESTO','FINAL')
-        SET @errores += N'- La fase no es válida.' + @nl;
+        SET @errores += N'- La fase no es vï¿½lida.' + @nl;
 
     IF @espacio IS NULL OR @espacio NOT BETWEEN 1 AND 4
         SET @errores += N'- El espacio debe estar entre 1 y 4.' + @nl;
@@ -196,7 +196,7 @@ BEGIN
         SET @errores += N'- Ya existe una tarifa para esa fase y espacio.' + @nl;
 
     IF @moneda IS NULL OR @moneda NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- La moneda debe ser un código de 3 letras (ej. USD).' + @nl;
+        SET @errores += N'- La moneda debe ser un cï¿½digo de 3 letras (ej. USD).' + @nl;
 
     IF @importe IS NULL OR @importe < 0
         SET @errores += N'- El importe debe ser mayor o igual a cero.' + @nl;
@@ -229,9 +229,9 @@ BEGIN
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
 
     IF @monedaOrigen IS NULL OR @monedaOrigen NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- La moneda de origen debe ser un código de 3 letras.' + @nl;
+        SET @errores += N'- La moneda de origen debe ser un cï¿½digo de 3 letras.' + @nl;
     IF @monedaDestino IS NULL OR @monedaDestino NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- La moneda de destino debe ser un código de 3 letras.' + @nl;
+        SET @errores += N'- La moneda de destino debe ser un cï¿½digo de 3 letras.' + @nl;
     IF @monedaOrigen = @monedaDestino
         SET @errores += N'- Las monedas de origen y destino deben ser distintas.' + @nl;
 
@@ -303,22 +303,22 @@ BEGIN
         SET @errores += N'- La tarifa no corresponde a la fase del partido.' + @nl;
 
     IF EXISTS (SELECT 1 FROM publicidad.publicidad_partido WHERE partido_id = @partidoId AND espacio = @espacio)
-        SET @errores += N'- Ese espacio publicitario ya está ocupado en el partido.' + @nl;
+        SET @errores += N'- Ese espacio publicitario ya estï¿½ ocupado en el partido.' + @nl;
     IF EXISTS (SELECT 1 FROM publicidad.publicidad_partido WHERE partido_id = @partidoId AND pieza_id = @piezaId)
         SET @errores += N'- La pieza ya se emite en ese partido.' + @nl;
 
     IF @fechaPartido IS NOT NULL AND @inicioCampania IS NOT NULL
        AND (@fechaPartido < @inicioCampania OR @fechaPartido > @finCampania)
-        SET @errores += N'- La campaña de la pieza no está vigente en la fecha del partido.' + @nl;
+        SET @errores += N'- La campaï¿½a de la pieza no estï¿½ vigente en la fecha del partido.' + @nl;
 
     IF @momentoEmision IS NULL
-        SET @errores += N'- El momento de emisión es obligatorio.' + @nl;
+        SET @errores += N'- El momento de emisiï¿½n es obligatorio.' + @nl;
 
     IF @importeFacturado IS NULL OR @importeFacturado < 0
         SET @errores += N'- El importe facturado debe ser mayor o igual a cero.' + @nl;
 
     IF @moneda IS NULL OR @moneda NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- La moneda debe ser un código de 3 letras (ej. USD).' + @nl;
+        SET @errores += N'- La moneda debe ser un cï¿½digo de 3 letras (ej. USD).' + @nl;
 
     IF @errores <> N''
     BEGIN

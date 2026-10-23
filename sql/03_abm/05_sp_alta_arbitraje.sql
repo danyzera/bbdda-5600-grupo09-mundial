@@ -1,10 +1,10 @@
 /* ============================================================================
    Universidad : Universidad Nacional de La Matanza (UNLaM)
    Materia     : 3641 - Bases de Datos Aplicada
-   Comision    : Com: 5600      Grupo:09
-   Integrantes :
+   Comision    : Com:5600      Grupo:09
+   Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 03_sp_alta_arbitraje.sql
+   Script      : 05_sp_alta_arbitraje.sql
    Objetivo    : Procedimientos almacenados de ALTA del esquema arbitraje.
                  Numeros de error: 50201-50205.
    ============================================================================ */
@@ -33,17 +33,17 @@ BEGIN
         SET @errores += N'- El nombre es obligatorio.' + @nl;
 
     IF NOT EXISTS (SELECT 1 FROM torneo.pais WHERE pais_id = @paisId)
-        SET @errores += N'- El país no existe.' + @nl;
+        SET @errores += N'- El paï¿½s no existe.' + @nl;
 
     IF EXISTS (SELECT 1 FROM arbitraje.arbitro WHERE nombre = LTRIM(RTRIM(@nombre)) AND pais_id = @paisId)
-        SET @errores += N'- Ya existe un árbitro con ese nombre y país.' + @nl;
+        SET @errores += N'- Ya existe un ï¿½rbitro con ese nombre y paï¿½s.' + @nl;
 
     IF @categoria IS NULL OR @categoria NOT IN ('FIFA','CONFEDERACION')
-        SET @errores += N'- La categoría debe ser FIFA o CONFEDERACION.' + @nl;
+        SET @errores += N'- La categorï¿½a debe ser FIFA o CONFEDERACION.' + @nl;
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar el árbitro:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar el ï¿½rbitro:' + @nl + @errores;
         THROW 50201, @errores, 1;
     END;
 
@@ -66,17 +66,17 @@ BEGIN
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
 
     IF NOT EXISTS (SELECT 1 FROM arbitraje.arbitro WHERE arbitro_id = @arbitroId)
-        SET @errores += N'- El árbitro no existe.' + @nl;
+        SET @errores += N'- El ï¿½rbitro no existe.' + @nl;
 
     IF @idioma IS NULL OR LTRIM(RTRIM(@idioma)) = N''
         SET @errores += N'- El idioma es obligatorio.' + @nl;
     IF EXISTS (SELECT 1 FROM arbitraje.arbitro_idioma
                WHERE arbitro_id = @arbitroId AND idioma = LTRIM(RTRIM(@idioma)))
-        SET @errores += N'- El árbitro ya tiene registrado ese idioma.' + @nl;
+        SET @errores += N'- El ï¿½rbitro ya tiene registrado ese idioma.' + @nl;
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar el idioma del árbitro:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar el idioma del ï¿½rbitro:' + @nl + @errores;
         THROW 50202, @errores, 1;
     END;
 
@@ -113,7 +113,7 @@ BEGIN
     IF @fase IS NULL
         SET @errores += N'- El partido no existe.' + @nl;
     IF @paisArbitro IS NULL
-        SET @errores += N'- El árbitro no existe.' + @nl;
+        SET @errores += N'- El ï¿½rbitro no existe.' + @nl;
     IF @rolArbitral IS NULL OR @rolArbitral NOT IN ('PRINCIPAL','ASISTENTE','CUARTO','VAR')
         SET @errores += N'- El rol debe ser PRINCIPAL, ASISTENTE, CUARTO o VAR.' + @nl;
 
@@ -121,30 +121,30 @@ BEGIN
        AND @paisArbitro IN (@paisLocal, @paisVisitante)
     BEGIN
         SET @conflicto = 1;
-        SET @errores += N'- Conflicto de nacionalidad: el árbitro es del país de una de las selecciones.' + @nl;
+        SET @errores += N'- Conflicto de nacionalidad: el ï¿½rbitro es del paï¿½s de una de las selecciones.' + @nl;
     END;
 
     IF EXISTS (SELECT 1 FROM arbitraje.designacion_arbitral WHERE partido_id = @partidoId AND arbitro_id = @arbitroId)
-        SET @errores += N'- El árbitro ya está designado en ese partido.' + @nl;
+        SET @errores += N'- El ï¿½rbitro ya estï¿½ designado en ese partido.' + @nl;
     IF @rolArbitral IN ('PRINCIPAL','CUARTO','VAR')
        AND EXISTS (SELECT 1 FROM arbitraje.designacion_arbitral WHERE partido_id = @partidoId AND rol_arbitral = @rolArbitral)
-        SET @errores += N'- El partido ya tiene un árbitro con ese rol.' + @nl;
+        SET @errores += N'- El partido ya tiene un ï¿½rbitro con ese rol.' + @nl;
 
     IF @fechaUtc IS NOT NULL
        AND EXISTS (SELECT 1 FROM arbitraje.designacion_arbitral d
                    JOIN torneo.partido p2 ON p2.partido_id = d.partido_id
                    WHERE d.arbitro_id = @arbitroId AND d.partido_id <> @partidoId
                      AND ABS(DATEDIFF(MINUTE, p2.fecha_hora_utc, @fechaUtc)) < @minArbitro)
-        SET @errores += N'- El árbitro está designado en otro partido en un horario superpuesto.' + @nl;
+        SET @errores += N'- El ï¿½rbitro estï¿½ designado en otro partido en un horario superpuesto.' + @nl;
 
-    -- Rechazo por nacionalidad: queda registrado aunque la designación falle
+    -- Rechazo por nacionalidad: queda registrado aunque la designaciï¿½n falle
     IF @conflicto = 1 AND @rolArbitral IN ('PRINCIPAL','ASISTENTE','CUARTO','VAR')
         INSERT INTO arbitraje.designacion_rechazada (partido_id, arbitro_id, rol_arbitral, motivo)
         VALUES (@partidoId, @arbitroId, @rolArbitral, N'Conflicto de nacionalidad con una de las selecciones del partido.');
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar la designación arbitral:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar la designaciï¿½n arbitral:' + @nl + @errores;
         THROW 50203, @errores, 1;
     END;
 
@@ -153,7 +153,7 @@ BEGIN
 
     SET @designacionId = SCOPE_IDENTITY();
 
-    -- Advertencia (criterio a documentar): selección del país del árbitro que sigue en carrera
+    -- Advertencia (criterio a documentar): selecciï¿½n del paï¿½s del ï¿½rbitro que sigue en carrera
     IF @fase <> 'GRUPOS'
        AND EXISTS (
             SELECT 1
@@ -168,7 +168,7 @@ BEGIN
                            OR (p.seleccion_visitante_id = s.seleccion_id
                                AND (p.goles_visitante < p.goles_local
                                     OR (p.goles_local = p.goles_visitante AND p.penales_visitante < p.penales_local))))))
-        RAISERROR (N'Advertencia: el país del árbitro tiene una selección aún en carrera y podría cruzarse con el árbitro en fases posteriores.', 10, 1) WITH NOWAIT;
+        RAISERROR (N'Advertencia: el paï¿½s del ï¿½rbitro tiene una selecciï¿½n aï¿½n en carrera y podrï¿½a cruzarse con el ï¿½rbitro en fases posteriores.', 10, 1) WITH NOWAIT;
 END;
 GO
 
@@ -189,7 +189,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM torneo.partido WHERE partido_id = @partidoId)
         SET @errores += N'- El partido no existe.' + @nl;
     IF NOT EXISTS (SELECT 1 FROM arbitraje.arbitro WHERE arbitro_id = @arbitroId)
-        SET @errores += N'- El árbitro no existe.' + @nl;
+        SET @errores += N'- El ï¿½rbitro no existe.' + @nl;
     IF @rolArbitral IS NULL OR @rolArbitral NOT IN ('PRINCIPAL','ASISTENTE','CUARTO','VAR')
         SET @errores += N'- El rol debe ser PRINCIPAL, ASISTENTE, CUARTO o VAR.' + @nl;
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = N''
@@ -197,7 +197,7 @@ BEGIN
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar la designación rechazada:' + @nl + @errores;
+        SET @errores = N'No se pudo registrar la designaciï¿½n rechazada:' + @nl + @errores;
         THROW 50204, @errores, 1;
     END;
 
@@ -229,7 +229,7 @@ BEGIN
     WHERE d.designacion_id = @designacionId;
 
     IF @fechaPartido IS NULL
-        SET @errores += N'- La designación arbitral no existe.' + @nl;
+        SET @errores += N'- La designaciï¿½n arbitral no existe.' + @nl;
 
     IF @fecha IS NULL
         SET @errores += N'- La fecha es obligatoria.' + @nl;

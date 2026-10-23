@@ -4,7 +4,7 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 17/10/2026
-   Script      : 15_sp_finalizar_partido.sql
+   Script      : 17_sp_partido_finalizar.sql
    Objetivo    : Procedimiento almacenado para finalizar un partido.
                 (transición EN_CURSO -> FINALIZADO). No se puede finalizar
                 un partido PROGRAMADO porque todavía no comenzó, ni uno
@@ -12,6 +12,7 @@
                 computar y registrar el resultado. Este SP actualiza tanto
                 la tabla partido como la tabla suspensión, por la contabilización
                 de los partidos cumplidos.
+   Código de error del SP: 53105, en concordancia con la nomenclatura.
    ============================================================================ */
 
 USE MundialDB;
@@ -21,7 +22,7 @@ SET QUOTED_IDENTIFIER ON;
 SET ANSI_NULLS ON;
 GO
 
-CREATE OR ALTER PROCEDURE torneo.sp_finalizar_partido
+CREATE OR ALTER PROCEDURE torneo.sp_partido_finalizar
    @idPartido  INT,
    @asistencia INT
 AS

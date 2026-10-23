@@ -4,7 +4,7 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 17/10/2026
-   Script      : 11_sp_iniciar_partido.sql
+   Script      : 13_sp_partido_iniciar.sql
    Objetivo    : Procedimiento almacenado para dar comienzo a un partido.
                 Con precondiciones, pasa un partido de estar PROGRAMADO
                 A estar EN CURSO. Es condición necesaria que el partido esté
@@ -17,6 +17,7 @@
                 alguno de los SPs previamente generados para ABM sobre las tablas.
                 Es requisito explícito que ninguna operación de ABM acceda a las
                 tablas sin tener al SP pertinente de por medio.
+   Código de error del SP: 53101, en concordancia con la nomenclatura.
    ============================================================================ */
 
 USE MundialDB;
@@ -26,7 +27,7 @@ SET QUOTED_IDENTIFIER ON;               -- Exigencia de SQL Server para operator
 SET ANSI_NULLS ON;                      -- Ídem
 GO                                      -- El SP se va a almacenar, y posteriormente ejecutar, con estos seteos
 
-CREATE OR ALTER PROCEDURE torneo.sp_iniciar_partido
+CREATE OR ALTER PROCEDURE torneo.sp_partido_iniciar
     @idPartido INT
 AS
 BEGIN
