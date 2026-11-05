@@ -1,0 +1,4 @@
+iso_pais,nombre_seleccion,confederacion,grupo,nombre_jugador,fecha_nacimiento,posicion,club_origen,dorsal,fecha_convocatoria
+ARG,Argentina,CONMEBOL,A,Lionel Messi,1987-06-24,DEL,Inter Miami,10,2026-05-15
+ARG,Argentina,CONMEBOL,A,Emiliano Martinez,1992-09-02,ARQ,Aston Villa,1,2026-05-15
+ESP,España,UEFA,B,Pedri,2002-11-25,MED,Barcelona,8,2026-05-18

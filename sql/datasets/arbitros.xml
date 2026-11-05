@@ -1,0 +1,21 @@
+<arbitros>
+
+    <arbitro>
+        <nombre>Facundo Tello</nombre>
+        <pais_iso>ARG</pais_iso>
+        <categoria>FIFA</categoria>
+    </arbitro>
+
+    <arbitro>
+        <nombre>Michael Oliver</nombre>
+        <pais_iso>ENG</pais_iso>
+        <categoria>FIFA</categoria>
+    </arbitro>
+
+    <arbitro>
+        <nombre>Arbitro Error</nombre>
+        <pais_iso>XXX</pais_iso>
+        <categoria>FIFA</categoria>
+    </arbitro>
+
+</arbitros>

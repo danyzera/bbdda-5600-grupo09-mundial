@@ -1,0 +1,5 @@
+nombre,continente,codigo_iso,huso_horario,pbi_per_capita,pbi_anio
+Argentina,AMERICA,ARG,Argentina Standard Time,14000,2025
+Brasil,AMERICA,BRA,E. South America Standard Time,11000,2025
+España,EUROPA,ESP,Romance Standard Time,32000,2025
+PaisError,AMERICA,XX,UTC,1000,2025
