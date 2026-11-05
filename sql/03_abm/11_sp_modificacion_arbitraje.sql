@@ -6,8 +6,7 @@
    Fecha       : 06/10/2026
    Script      : 11_sp_modificacion_arbitraje.sql
    Objetivo    : Procedimientos almacenados de MODIFICACION del esquema arbitraje.
-                 Mismas convenciones que el script 06. Sin cursores ni SQL dinamico.
-                 Numeros de error: baja 51201-51205, modificacion 52201-52205.
+                 Numeros de error: 52201-52205.
    ============================================================================ */
 
 USE MundialDB;
@@ -18,7 +17,7 @@ SET ANSI_NULLS ON;
 GO
  
 -- ============================================================================
--- arbitraje.arbitro  (la baja elimina tambien sus idiomas, en una transaccion)
+-- arbitraje.arbitro
 -- ============================================================================
 CREATE OR ALTER PROCEDURE arbitraje.sp_arbitro_modificacion
     @arbitroId  INT,
@@ -39,6 +38,7 @@ BEGIN
  
     IF NOT EXISTS (SELECT 1 FROM torneo.pais WHERE pais_id = @paisId)
         SET @errores += N'- El país no existe.' + @nl;
+
     IF @paisActual IS NOT NULL AND @paisId <> @paisActual
        AND EXISTS (SELECT 1 FROM arbitraje.designacion_arbitral WHERE arbitro_id = @arbitroId)
         SET @errores += N'- No se puede cambiar el país: el árbitro ya tiene designaciones validadas por nacionalidad.' + @nl;
@@ -80,6 +80,7 @@ BEGIN
  
     IF @idiomaNuevo IS NULL OR LTRIM(RTRIM(@idiomaNuevo)) = N''
         SET @errores += N'- El idioma nuevo es obligatorio.' + @nl;
+        
     IF EXISTS (SELECT 1 FROM arbitraje.arbitro_idioma
                WHERE arbitro_id = @arbitroId AND idioma = LTRIM(RTRIM(@idiomaNuevo)))
         SET @errores += N'- El árbitro ya tiene registrado el idioma nuevo.' + @nl;
@@ -122,10 +123,12 @@ BEGIN
  
     IF @rolArbitral IS NULL OR @rolArbitral NOT IN ('PRINCIPAL','ASISTENTE','CUARTO','VAR')
         SET @errores += N'- El rol debe ser PRINCIPAL, ASISTENTE, CUARTO o VAR.' + @nl;
+        
     IF @rolArbitral IN ('PRINCIPAL','CUARTO','VAR')
        AND EXISTS (SELECT 1 FROM arbitraje.designacion_arbitral
                    WHERE partido_id = @partidoId AND rol_arbitral = @rolArbitral AND designacion_id <> @designacionId)
         SET @errores += N'- El partido ya tiene un árbitro con ese rol.' + @nl;
+        
     IF @rolArbitral = 'ASISTENTE'
        AND (SELECT COUNT(*) FROM arbitraje.designacion_arbitral
             WHERE partido_id = @partidoId AND rol_arbitral = 'ASISTENTE'
@@ -138,7 +141,9 @@ BEGIN
         THROW 52203, @errores, 1;
     END;
  
-    UPDATE arbitraje.designacion_arbitral SET rol_arbitral = @rolArbitral WHERE designacion_id = @designacionId;
+    UPDATE arbitraje.designacion_arbitral 
+    SET rol_arbitral = @rolArbitral 
+    WHERE designacion_id = @designacionId;
 END;
 GO
  
@@ -155,6 +160,7 @@ BEGIN
  
     IF NOT EXISTS (SELECT 1 FROM arbitraje.designacion_rechazada WHERE rechazo_id = @rechazoId)
         SET @errores += N'- La designación rechazada no existe.' + @nl;
+        
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = N''
         SET @errores += N'- El motivo es obligatorio.' + @nl;
  
@@ -164,7 +170,9 @@ BEGIN
         THROW 52204, @errores, 1;
     END;
  
-    UPDATE arbitraje.designacion_rechazada SET motivo = LTRIM(RTRIM(@motivo)) WHERE rechazo_id = @rechazoId;
+    UPDATE arbitraje.designacion_rechazada 
+    SET motivo = LTRIM(RTRIM(@motivo)) 
+    WHERE rechazo_id = @rechazoId;
 END;
 GO
  
@@ -195,7 +203,7 @@ BEGIN
         SET @errores += N'- La fecha es obligatoria.' + @nl;
     IF @fecha IS NOT NULL AND @fechaPartido IS NOT NULL AND @fecha < @fechaPartido
         SET @errores += N'- La fecha del informe no puede ser anterior a la del partido.' + @nl;
-    IF @fecha IS NOT NULL AND @fecha > CAST(SYSDATETIME() AS DATE)
+    IF @fecha IS NOT NULL AND @fecha > CAST(GETDATE() AS DATE)
         SET @errores += N'- La fecha del informe no puede ser futura.' + @nl;
  
     IF @tipo IS NULL OR @tipo NOT IN ('INFORME','SANCION')

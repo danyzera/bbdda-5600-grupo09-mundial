@@ -97,11 +97,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
-    DECLARE @fase VARCHAR(15), @fechaUtc DATETIME2(0), @paisLocal INT, @paisVisitante INT,
+    DECLARE @fase VARCHAR(15), @fechaUtc DATETIME2(0), @estado VARCHAR(12),
+            @paisLocal INT, @paisVisitante INT,
             @paisArbitro INT, @conflicto BIT = 0, @advertir BIT = 0,
             @minArbitro INT = ISNULL((SELECT valor FROM torneo.parametro_reglamento WHERE clave = 'MIN_MINUTOS_ENTRE_PARTIDOS_ARBITRO'), 180);
 
-    SELECT @fase = p.fase, @fechaUtc = p.fecha_hora_utc,
+    SELECT @fase = p.fase, @fechaUtc = p.fecha_hora_utc, @estado = p.estado,
            @paisLocal = sl.pais_id, @paisVisitante = sv.pais_id
     FROM torneo.partido p
     JOIN torneo.seleccion sl ON sl.seleccion_id = p.seleccion_local_id
@@ -112,6 +113,9 @@ BEGIN
 
     IF @fase IS NULL
         SET @errores += N'- El partido no existe.' + @nl;
+    ELSE IF @estado <> 'PROGRAMADO'
+        SET @errores += N'- Solo se pueden registrar designaciones en partidos PROGRAMADOS.' + @nl;
+
     IF @paisArbitro IS NULL
         SET @errores += N'- El árbitro no existe.' + @nl;
     IF @rolArbitral IS NULL OR @rolArbitral NOT IN ('PRINCIPAL','ASISTENTE','CUARTO','VAR')
@@ -126,9 +130,14 @@ BEGIN
 
     IF EXISTS (SELECT 1 FROM arbitraje.designacion_arbitral WHERE partido_id = @partidoId AND arbitro_id = @arbitroId)
         SET @errores += N'- El árbitro ya está designado en ese partido.' + @nl;
+        
     IF @rolArbitral IN ('PRINCIPAL','CUARTO','VAR')
        AND EXISTS (SELECT 1 FROM arbitraje.designacion_arbitral WHERE partido_id = @partidoId AND rol_arbitral = @rolArbitral)
         SET @errores += N'- El partido ya tiene un árbitro con ese rol.' + @nl;
+
+    IF @rolArbitral = 'ASISTENTE' 
+       AND (SELECT COUNT(*) FROM arbitraje.designacion_arbitral WHERE partido_id = @partidoId AND rol_arbitral = 'ASISTENTE') >= 2
+        SET @errores += N'- El partido ya tiene el máximo permitido de 2 árbitros asistentes.' + @nl;
 
     IF @fechaUtc IS NOT NULL
        AND EXISTS (SELECT 1 FROM arbitraje.designacion_arbitral d
@@ -137,7 +146,7 @@ BEGIN
                      AND ABS(DATEDIFF(MINUTE, p2.fecha_hora_utc, @fechaUtc)) < @minArbitro)
         SET @errores += N'- El árbitro está designado en otro partido en un horario superpuesto.' + @nl;
 
-    -- Rechazo por nacionalidad: queda registrado aunque la designación falle
+    -- Rechazo por nacionalidad: queda registrado aunque la designación falle (sujeto a contexto de transacción en llamadas externas)
     IF @conflicto = 1 AND @rolArbitral IN ('PRINCIPAL','ASISTENTE','CUARTO','VAR')
         INSERT INTO arbitraje.designacion_rechazada (partido_id, arbitro_id, rol_arbitral, motivo)
         VALUES (@partidoId, @arbitroId, @rolArbitral, N'Conflicto de nacionalidad con una de las selecciones del partido.');
@@ -153,12 +162,17 @@ BEGIN
 
     SET @designacionId = SCOPE_IDENTITY();
 
-    -- Advertencia (criterio a documentar): selección del país del árbitro que sigue en carrera
+    -- Advertencia: selección del país del árbitro que sigue en carrera.
+    -- Se evita el falso positivo controlando que la selección no haya quedado eliminada en GRUPOS 
+    -- o haya perdido un partido eliminatorio.
     IF @fase <> 'GRUPOS'
        AND EXISTS (
             SELECT 1
             FROM torneo.seleccion s
             WHERE s.pais_id = @paisArbitro
+              -- No fue eliminada en grupos (suponiendo que si llegó a 8vos jugó partidos de fase distinta)
+              AND EXISTS (SELECT 1 FROM torneo.partido WHERE (seleccion_local_id = s.seleccion_id OR seleccion_visitante_id = s.seleccion_id) AND fase <> 'GRUPOS')
+              -- No perdió ningún partido de eliminación directa
               AND NOT EXISTS (
                     SELECT 1 FROM torneo.partido p
                     WHERE p.fase <> 'GRUPOS' AND p.estado = 'FINALIZADO'
@@ -233,6 +247,8 @@ BEGIN
 
     IF @fecha IS NULL
         SET @errores += N'- La fecha es obligatoria.' + @nl;
+    IF @fecha IS NOT NULL AND @fecha > CAST(GETDATE() AS DATE)
+        SET @errores += N'- La fecha del informe no puede ser una fecha futura.' + @nl;
     IF @fecha IS NOT NULL AND @fechaPartido IS NOT NULL AND @fecha < @fechaPartido
         SET @errores += N'- La fecha del informe no puede ser anterior a la del partido.' + @nl;
 

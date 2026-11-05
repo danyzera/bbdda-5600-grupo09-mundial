@@ -323,20 +323,48 @@ CREATE OR ALTER PROCEDURE torneo.sp_reemplazo_convocatoria_alta
 AS
 BEGIN
     SET NOCOUNT ON;
-    DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
 
-    IF NOT EXISTS (SELECT 1 FROM torneo.seleccion WHERE seleccion_id = @seleccionId)
+    DECLARE @errores NVARCHAR(MAX) = N'',
+            @nl NCHAR(2) = CHAR(13) + CHAR(10);
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM torneo.seleccion
+        WHERE seleccion_id = @seleccionId
+    )
         SET @errores += N'- La selección no existe.' + @nl;
 
-    IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorBajaId)
+    IF NOT EXISTS (
+        SELECT 1
+        FROM torneo.jugador
+        WHERE jugador_id = @jugadorBajaId
+    )
         SET @errores += N'- El jugador de baja no existe.' + @nl;
-    IF NOT EXISTS (SELECT 1 FROM torneo.convocatoria WHERE seleccion_id = @seleccionId AND jugador_id = @jugadorBajaId)
-        SET @errores += N'- El jugador de baja no pertenece al plantel de la selección.' + @nl;
 
-    IF NOT EXISTS (SELECT 1 FROM torneo.jugador WHERE jugador_id = @jugadorAltaId)
+    IF NOT EXISTS (
+        SELECT 1
+        FROM torneo.convocatoria
+        WHERE seleccion_id = @seleccionId
+          AND jugador_id = @jugadorBajaId
+          AND estado = 'VIGENTE'
+    )
+        SET @errores += N'- El jugador de baja no posee una convocatoria vigente en la selección.' + @nl;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM torneo.jugador
+        WHERE jugador_id = @jugadorAltaId
+    )
         SET @errores += N'- El jugador de alta no existe.' + @nl;
-    IF NOT EXISTS (SELECT 1 FROM torneo.convocatoria WHERE seleccion_id = @seleccionId AND jugador_id = @jugadorAltaId)
-        SET @errores += N'- El jugador de alta no pertenece al plantel de la selección.' + @nl;
+
+    IF EXISTS (
+        SELECT 1
+        FROM torneo.convocatoria
+        WHERE seleccion_id = @seleccionId
+          AND jugador_id = @jugadorAltaId
+          AND estado = 'VIGENTE'
+    )
+        SET @errores += N'- El jugador de alta ya pertenece actualmente a la convocatoria de la selección.' + @nl;
 
     IF @jugadorBajaId = @jugadorAltaId
         SET @errores += N'- El jugador de baja y el de alta deben ser distintos.' + @nl;
@@ -349,12 +377,30 @@ BEGIN
 
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo registrar el reemplazo de convocatoria:' + @nl + @errores;
+        SET @errores =
+            N'No se pudo registrar el reemplazo de convocatoria:' +
+            @nl +
+            @errores;
+
         THROW 50107, @errores, 1;
     END;
 
-    INSERT INTO torneo.reemplazo_convocatoria (seleccion_id, jugador_baja_id, jugador_alta_id, motivo, fecha_cambio)
-    VALUES (@seleccionId, @jugadorBajaId, @jugadorAltaId, LTRIM(RTRIM(@motivo)), @fechaCambio);
+    INSERT INTO torneo.reemplazo_convocatoria
+    (
+        seleccion_id,
+        jugador_baja_id,
+        jugador_alta_id,
+        motivo,
+        fecha_cambio
+    )
+    VALUES
+    (
+        @seleccionId,
+        @jugadorBajaId,
+        @jugadorAltaId,
+        LTRIM(RTRIM(@motivo)),
+        @fechaCambio
+    );
 
     SET @reemplazoId = SCOPE_IDENTITY();
 END;

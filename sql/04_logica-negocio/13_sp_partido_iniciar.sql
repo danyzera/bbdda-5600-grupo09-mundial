@@ -6,26 +6,19 @@
    Fecha       : 17/10/2026
    Script      : 13_sp_partido_iniciar.sql
    Objetivo    : Procedimiento almacenado para dar comienzo a un partido.
-                Con precondiciones, pasa un partido de estar PROGRAMADO
-                A estar EN CURSO. Es condición necesaria que el partido esté
-                EN CURSO para dar lugar a otros procedimientos de negocio
-                como registrar un gol. El procedimiento, al integrar varias
-                operaciones que representan una unidad lógica (dar comienzo
-                al partido), hace uso del TCL disponible en SQL Server.
-                La lógica de negocio sobre partido implica una operación ABM,
-                concretamente modificar el estado, es por esto que se utiliza
-                alguno de los SPs previamente generados para ABM sobre las tablas.
-                Es requisito explícito que ninguna operación de ABM acceda a las
-                tablas sin tener al SP pertinente de por medio.
+                 Con precondiciones, pasa un partido de estar PROGRAMADO
+                 A estar EN CURSO. Es condición necesaria que el partido esté
+                 EN CURSO para dar lugar a otros procedimientos de negocio
+                 como registrar un gol. 
    Código de error del SP: 53101, en concordancia con la nomenclatura.
    ============================================================================ */
 
 USE MundialDB;
 GO
 
-SET QUOTED_IDENTIFIER ON;               -- Exigencia de SQL Server para operatorias sobre índices filtrados
-SET ANSI_NULLS ON;                      -- Ídem
-GO                                      -- El SP se va a almacenar, y posteriormente ejecutar, con estos seteos
+SET QUOTED_IDENTIFIER ON;               
+SET ANSI_NULLS ON;                      
+GO                                      
 
 CREATE OR ALTER PROCEDURE torneo.sp_partido_iniciar
     @idPartido INT
@@ -33,7 +26,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
-    DECLARE @errores NVARCHAR(MAX) = N'', @saltoDeLinea NCHAR(2) = CHAR(13) + CHAR(10); -- CRLF. CHAR actúa de función
+    DECLARE @errores NVARCHAR(MAX) = N'', @saltoDeLinea NCHAR(2) = CHAR(13) + CHAR(10); 
     DECLARE @estadoPartido VARCHAR(12),
             @fase VARCHAR(15),
             @idSede INT,
@@ -44,6 +37,7 @@ BEGIN
             @minimoSuplentes INT;
 
     BEGIN TRY
+        BEGIN TRANSACTION;
 
         SELECT  @estadoPartido = estado,
                 @fase = fase,
@@ -52,11 +46,10 @@ BEGIN
                 @idVisitante = seleccion_visitante_id,
                 @fechaUtc = fecha_hora_utc,
                 @fechaPartido = fecha_hora_local
-        FROM torneo.partido
+        FROM torneo.partido WITH (UPDLOCK)
         WHERE partido_id = @idPartido;
 
         -- Precondiciones en general (no se puede iniciar un partido si...)
-
         IF @estadoPartido IS NULL
             SET @errores += N'- El partido no existe.' + @saltoDeLinea;
         IF @estadoPartido IS NOT NULL AND @estadoPartido <> 'PROGRAMADO'
@@ -74,7 +67,6 @@ BEGIN
                                         WHERE ad.formacion_id = f.formacion_id
                                                 AND ad.es_titular = 1    ) <> 11)
                 SET @errores += N'- Cada formación debe tener exactamente 11 jugadores titulares.' + @saltoDeLinea;
-            -- No tiene sentido parametrizar el 11, es una constante que nunca cambió y se puede justificar que no cambiará más
 
             SELECT @minimoSuplentes = valor FROM torneo.parametro_reglamento WHERE clave = 'MIN_SUPLENTES';
 
@@ -110,20 +102,23 @@ BEGIN
                                                             AND c.estado = 'VIGENTE'))
                 SET @errores += N'- Hay jugadores alineados sin convocatoria vigente en su selección.' + @saltoDeLinea;
 
+            -- Validación de suspensión: Se une contra tarjeta y partido origen, y se compara por fecha_hora_utc
             IF EXISTS ( SELECT 1
                         FROM torneo.alineacion_detalle ad
                                 JOIN torneo.formacion_partido f ON f.formacion_id = ad.formacion_id
                                 JOIN torneo.suspension s ON s.jugador_id = ad.jugador_id
+                                JOIN torneo.tarjeta t_origen ON s.tarjeta_origen_id = t_origen.tarjeta_id
+                                JOIN torneo.partido p_origen ON t_origen.partido_id = p_origen.partido_id
                         WHERE f.partido_id = @idPartido
                                 AND s.partidos_cumplidos < s.partidos_suspendidos
-                                AND s.fecha_inicio < CAST(@fechaPartido AS DATE))
+                                AND p_origen.fecha_hora_utc < @fechaUtc)
                 SET @errores += N'- Hay jugadores alineados con suspensión vigente.' + @saltoDeLinea;
 
             IF (    SELECT COUNT(*)
                     FROM arbitraje.designacion_arbitral
                     WHERE partido_id = @idPartido
                             AND rol_arbitral = 'ASISTENTE') <> 2
-                SET @errores += N'- El partido debe tener exactamente dos árbitros asistentes.' + @saltoDeLinea; -- No es explícito del enunciado, pero lo asumimos por falta de información
+                SET @errores += N'- El partido debe tener exactamente dos árbitros asistentes.' + @saltoDeLinea; 
             
             IF (    SELECT COUNT(DISTINCT rol_arbitral)
                     FROM arbitraje.designacion_arbitral
@@ -156,16 +151,13 @@ BEGIN
                     FROM publicidad.publicidad_partido
                     WHERE partido_id = @idPartido   ) <> 4
             SET @errores += N'- El partido debe tener asignados exactamente 4 espacios publicitarios.' + @saltoDeLinea;
-
         END;
 
         IF @errores <> N''
         BEGIN
-            SET @errores = N'No se pudo iniciar el partido:' + @saltoDeLinea + @errores; -- Cabecera del listado de errores
+            SET @errores = N'No se pudo iniciar el partido:' + @saltoDeLinea + @errores; 
             THROW 53101, @errores, 1;
         END;
-
-        BEGIN TRANSACTION; -- Realmente no es estrictamente necesario dado que en este SP solo se modifica una tabla
 
         EXEC torneo.sp_partido_modificacion
                 @partidoId = @idPartido,

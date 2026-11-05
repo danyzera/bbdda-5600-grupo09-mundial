@@ -6,10 +6,9 @@
    Fecha       : 17/10/2026
    Script      : 14_sp_gol_registrar.sql
    Objetivo    : Registrar un gol durante un partido. Reutiliza la función que
-                consulta el equipo en un minuto dado (el minuto del gol)
+                 consulta el equipo en un minuto dado (el minuto del gol).
    Código de error del SP: 53102, en concordancia con la nomenclatura.
    ============================================================================ */
-
 
 USE MundialDB;
 GO
@@ -34,37 +33,48 @@ BEGIN
 
     DECLARE     @errores            NVARCHAR(MAX)   = N'',
                 @saltoDeLinea       NCHAR(2)        = CHAR(13) + CHAR(10);
-    DECLARE     @estadoPartido      VARCHAR(12);
+    DECLARE     @estadoPartido      VARCHAR(12),
+                @fase               VARCHAR(15);
     DECLARE     @localId            INT,
                 @visitanteId        INT,
                 @seleccionAutorId   INT;
 
     BEGIN TRY
-        -- BEGIN TRANSACTION;
+        BEGIN TRANSACTION;
 
         SELECT @estadoPartido   = estado,
+               @fase            = fase,
                @localId         = seleccion_local_id,
                @visitanteId     = seleccion_visitante_id
-        FROM torneo.partido AS p
+        FROM torneo.partido AS p WITH (UPDLOCK)
         WHERE p.partido_id = @partidoId;
 
         IF @estadoPartido IS NULL
             SET @errores += N'- El partido especificado no existe.' + @saltoDeLinea;
         ELSE IF @estadoPartido <> 'EN_CURSO'
             SET @errores += N'- Las incidencias solo pueden registrarse en partidos EN_CURSO.' + @saltoDeLinea;
+            
+        IF @estadoPartido IS NOT NULL AND @seleccionId NOT IN (@localId, @visitanteId)
+            SET @errores += N'- La selección especificada no participa en este partido.' + @saltoDeLinea;
 
-        SET @seleccionAutorId = IIF(
-            @tipoGol = 'EN_CONTRA',
-            IIF(
-                @seleccionId = @localId,
-                @visitanteId,
-                @localId
-            ),
-            @seleccionId
-        );
+        IF @fase = 'GRUPOS' AND @periodo IN ('ALARGUE', 'PENALES')
+            SET @errores += N'- Un partido en fase de grupos no puede tener goles en ALARGUE o PENALES.' + @saltoDeLinea;
 
-        IF @estadoPartido = 'EN_CURSO'
+        IF @tipoGol = 'EN_CONTRA' AND @jugadorAsistenteId IS NOT NULL
+            SET @errores += N'- Un gol en contra no puede tener un jugador asistente asignado.' + @saltoDeLinea;
+
+        IF @estadoPartido = 'EN_CURSO' AND @seleccionId IN (@localId, @visitanteId)
         BEGIN
+            SET @seleccionAutorId = IIF(
+                @tipoGol = 'EN_CONTRA',
+                IIF(
+                    @seleccionId = @localId,
+                    @visitanteId,
+                    @localId
+                ),
+                @seleccionId
+            );
+
             IF NOT EXISTS (
                 SELECT 1
                 FROM torneo.fn_obtener_alineacion_actual(@partidoId, @seleccionAutorId, @minuto) 
@@ -88,8 +98,6 @@ BEGIN
             SET @errores = N'No se puede procesar el registro del gol:' + @saltoDeLinea + @errores;
             THROW 53102, @errores, 1;
         END;
-
-        BEGIN TRANSACTION; -- Realmente no es estrictamente necesario dado que en este SP solo se modifica una tabla
 
         EXEC torneo.sp_gol_alta 
             @partidoId          = @partidoId,

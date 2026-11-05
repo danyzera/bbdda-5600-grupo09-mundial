@@ -6,10 +6,10 @@
    Fecha       : 17/10/2026
    Script      : 02_crear_funciones_reutilizables.sql
    Objetivo    : Funciones que retornan valores reutilizables, por ejemplo, en
-                la implementación de los procedimientos almacenados. Al degradarse
-                la performance en caso de no ser de una única línea de retorno, se
-                fomenta que sean inliners para que el query optimizer no tenga
-                problemas y no se provoquen penalizaciones en la performance.
+                 la implementación de los procedimientos almacenados. Al degradarse
+                 la performance en caso de no ser de una única línea de retorno, se
+                 fomenta que sean inliners para que el query optimizer no tenga
+                 problemas y no se provoquen penalizaciones en la performance.
    ============================================================================ */
 
 Use MundialDB;
@@ -19,8 +19,7 @@ SET QUOTED_IDENTIFIER ON;
 SET ANSI_NULLS ON;
 GO
 
-CREATE OR ALTER FUNCTION torneo.fn_obtener_alineacion_actual
-(
+CREATE OR ALTER FUNCTION torneo.fn_obtener_alineacion_actual(
     @idPartido          INT,
     @idSeleccion        INT,
     @minutoConsultado   SMALLINT
@@ -32,7 +31,7 @@ RETURN
     WITH alineacionPlanteada (idPartido,idSeleccion,idJugador,esTitular,posicionEnCancha) AS
     (
         -- Titulares y suplentes de la formación de la selección (lo que importa para esta función son los jugadores)
-        SELECT f.partido_id, f.seleccion_id, ad.jugador_id, ad.es_titular, j.posicion
+        SELECT f.partido_id, f.seleccion_id, ad.jugador_id, ad.es_titular, ad.posicion_campo
         FROM torneo.formacion_partido AS f
                 JOIN torneo.alineacion_detalle AS ad ON ad.formacion_id = f.formacion_id
                 JOIN torneo.jugador AS j ON j.jugador_id = ad.jugador_id
@@ -75,7 +74,7 @@ RETURN
                 SELECT 1
                 FROM torneo.tarjeta AS t
                 WHERE t.partido_id = @idPartido
-                        AND t.jugador_id = ap.jugador_id
+                        AND t.jugador_id = ap.idJugador
                         AND t.tipo = 'ROJA'
                         AND t.minuto <= @minutoConsultado
         )
@@ -83,7 +82,6 @@ RETURN
 GO
 
 -- CONTINUAR CON LAS DEMÁS
-
 -- torneo.obtener_tabla_grupo
 -- torneo.obtener_goleadores_global (quizás debería ser una vista)
 -- torneo.obtener_resultado_en_vivo?

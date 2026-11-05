@@ -3,11 +3,11 @@
    Materia     : 3641 - Bases de Datos Aplicada
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
-   Fecha       : 06/10/2026
+   Fecha       : 17/10/2026
    Script      : 09_sp_baja_publicidad.sql
    Objetivo    : Procedimientos almacenados de BAJA del esquema publicidad.
                  Mismas convenciones que el script 06. Sin cursores ni SQL dinamico.
-                 Numeros de error: baja 51301-51307, modificacion 52301-52307.
+                 Numeros de error: baja 51301-51307.
    ============================================================================ */
 
 USE MundialDB;
@@ -30,7 +30,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM publicidad.anunciante WHERE anunciante_id = @anuncianteId)
         SET @errores += N'- El anunciante no existe.' + @nl;
     IF EXISTS (SELECT 1 FROM publicidad.campania WHERE anunciante_id = @anuncianteId)
-        SET @errores += N'- El anunciante tiene campañas asociadas.' + @nl;
+        SET @errores += N'- El anunciante tiene campañas asociadas. Dé de baja las campañas primero.' + @nl;
  
     IF @errores <> N''
     BEGIN
@@ -45,96 +45,67 @@ GO
 -- ============================================================================
 -- publicidad.campania
 -- ============================================================================
--- El anunciante no se modifica (baja + alta)
-CREATE OR ALTER PROCEDURE publicidad.sp_campania_modificacion
-    @campaniaId   INT,
-    @nombre       NVARCHAR(100),
-    @presupuesto  DECIMAL(14,2),
-    @moneda       VARCHAR(10),
-    @fechaInicio  DATE,
-    @fechaFin     DATE
+CREATE OR ALTER PROCEDURE publicidad.sp_campania_baja
+    @campaniaId INT
 AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
-    DECLARE @anuncianteId INT = (SELECT anunciante_id FROM publicidad.campania WHERE campania_id = @campaniaId);
  
-    IF @anuncianteId IS NULL
+    IF NOT EXISTS (SELECT 1 FROM publicidad.campania WHERE campania_id = @campaniaId)
         SET @errores += N'- La campaña no existe.' + @nl;
- 
-    IF @nombre IS NULL OR LTRIM(RTRIM(@nombre)) = N''
-        SET @errores += N'- El nombre es obligatorio.' + @nl;
-    IF EXISTS (SELECT 1 FROM publicidad.campania
-               WHERE anunciante_id = @anuncianteId AND nombre = LTRIM(RTRIM(@nombre)) AND campania_id <> @campaniaId)
-        SET @errores += N'- El anunciante ya tiene otra campaña con ese nombre.' + @nl;
- 
-    IF @presupuesto IS NULL OR @presupuesto < 0
-        SET @errores += N'- El presupuesto debe ser mayor o igual a cero.' + @nl;
- 
-    IF @moneda IS NULL OR @moneda NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- La moneda debe ser un código de 3 letras (ej. USD).' + @nl;
- 
-    IF @fechaInicio IS NULL OR @fechaFin IS NULL
-        SET @errores += N'- Las fechas de inicio y fin son obligatorias.' + @nl;
-    IF @fechaInicio IS NOT NULL AND @fechaFin IS NOT NULL AND @fechaFin < @fechaInicio
-        SET @errores += N'- La fecha de fin no puede ser anterior a la de inicio.' + @nl;
-    IF @fechaInicio IS NOT NULL AND @fechaFin IS NOT NULL
-       AND EXISTS (SELECT 1
-                   FROM publicidad.publicidad_partido pp
-                   JOIN publicidad.pieza_publicitaria pz ON pz.pieza_id = pp.pieza_id
-                   JOIN torneo.partido p ON p.partido_id = pp.partido_id
-                   WHERE pz.campania_id = @campaniaId
-                     AND CAST(p.fecha_hora_local AS DATE) NOT BETWEEN @fechaInicio AND @fechaFin)
-        SET @errores += N'- Las nuevas fechas dejan fuera partidos donde la campaña ya tiene publicidad asignada.' + @nl;
+    
+    IF EXISTS (SELECT 1 FROM publicidad.pieza_publicitaria WHERE campania_id = @campaniaId)
+        SET @errores += N'- La campaña tiene piezas publicitarias asociadas. Dé de baja las piezas primero.' + @nl;
  
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo modificar la campaña:' + @nl + @errores;
-        THROW 52302, @errores, 1;
+        SET @errores = N'No se pudo dar de baja la campaña:' + @nl + @errores;
+        THROW 51302, @errores, 1;
     END;
  
-    UPDATE publicidad.campania
-    SET nombre = LTRIM(RTRIM(@nombre)), presupuesto = @presupuesto, moneda = UPPER(@moneda),
-        fecha_inicio = @fechaInicio, fecha_fin = @fechaFin
-    WHERE campania_id = @campaniaId;
+    DELETE FROM publicidad.campania WHERE campania_id = @campaniaId;
 END;
 GO
  
 -- ============================================================================
--- publicidad.pieza_publicitaria  (la baja quita tambien sus paises, en una transaccion)
+-- publicidad.pieza_publicitaria
+-- La baja quita también sus países en una transacción.
 -- ============================================================================
--- La campaña no se modifica (baja + alta)
-CREATE OR ALTER PROCEDURE publicidad.sp_pieza_publicitaria_modificacion
-    @piezaId  INT,
-    @nombre   NVARCHAR(100),
-    @idioma   NVARCHAR(50)
+CREATE OR ALTER PROCEDURE publicidad.sp_pieza_publicitaria_baja
+    @piezaId INT
 AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
-    DECLARE @campaniaId INT = (SELECT campania_id FROM publicidad.pieza_publicitaria WHERE pieza_id = @piezaId);
  
-    IF @campaniaId IS NULL
-        SET @errores += N'- La pieza no existe.' + @nl;
- 
-    IF @nombre IS NULL OR LTRIM(RTRIM(@nombre)) = N''
-        SET @errores += N'- El nombre es obligatorio.' + @nl;
-    IF EXISTS (SELECT 1 FROM publicidad.pieza_publicitaria
-               WHERE campania_id = @campaniaId AND nombre = LTRIM(RTRIM(@nombre)) AND pieza_id <> @piezaId)
-        SET @errores += N'- La campaña ya tiene otra pieza con ese nombre.' + @nl;
- 
-    IF @idioma IS NULL OR LTRIM(RTRIM(@idioma)) = N''
-        SET @errores += N'- El idioma es obligatorio.' + @nl;
+    IF NOT EXISTS (SELECT 1 FROM publicidad.pieza_publicitaria WHERE pieza_id = @piezaId)
+        SET @errores += N'- La pieza publicitaria no existe.' + @nl;
+        
+    IF EXISTS (SELECT 1 FROM publicidad.publicidad_partido WHERE pieza_id = @piezaId)
+        SET @errores += N'- La pieza está asignada a uno o más partidos. Elimine esas asignaciones primero.' + @nl;
  
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo modificar la pieza publicitaria:' + @nl + @errores;
-        THROW 52303, @errores, 1;
+        SET @errores = N'No se pudo dar de baja la pieza publicitaria:' + @nl + @errores;
+        THROW 51303, @errores, 1;
     END;
  
-    UPDATE publicidad.pieza_publicitaria
-    SET nombre = LTRIM(RTRIM(@nombre)), idioma = LTRIM(RTRIM(@idioma))
-    WHERE pieza_id = @piezaId;
+    BEGIN TRY
+        BEGIN TRAN;
+        
+        -- Eliminar primero la tabla hija (pieza_pais)
+        DELETE FROM publicidad.pieza_pais WHERE pieza_id = @piezaId;
+        
+        -- Luego eliminar la pieza
+        DELETE FROM publicidad.pieza_publicitaria WHERE pieza_id = @piezaId;
+        
+        COMMIT TRAN;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRAN;
+        THROW;
+    END CATCH
 END;
 GO
  
@@ -143,72 +114,62 @@ GO
 -- Una pieza debe quedar dirigida al menos a un pais (si no, no entra en ningun criterio
 -- de asignacion de la seccion H). Para quitarlos todos se da de baja la pieza.
 -- ============================================================================
-CREATE OR ALTER PROCEDURE publicidad.sp_pieza_pais_modificacion
-    @piezaId      INT,
-    @paisActual   INT,
-    @paisNuevo    INT
+CREATE OR ALTER PROCEDURE publicidad.sp_pieza_pais_baja
+    @piezaId INT,
+    @paisId INT
 AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
  
-    IF NOT EXISTS (SELECT 1 FROM publicidad.pieza_pais WHERE pieza_id = @piezaId AND pais_id = @paisActual)
-        SET @errores += N'- La pieza no está dirigida al país a modificar.' + @nl;
-    IF NOT EXISTS (SELECT 1 FROM torneo.pais WHERE pais_id = @paisNuevo)
-        SET @errores += N'- El país nuevo no existe.' + @nl;
-    IF EXISTS (SELECT 1 FROM publicidad.pieza_pais WHERE pieza_id = @piezaId AND pais_id = @paisNuevo)
-        SET @errores += N'- La pieza ya está dirigida al país nuevo.' + @nl;
+    IF NOT EXISTS (SELECT 1 FROM publicidad.pieza_pais WHERE pieza_id = @piezaId AND pais_id = @paisId)
+        SET @errores += N'- La relación entre la pieza y el país no existe.' + @nl;
+        
+    -- Validar que no se elimine el único país asociado
+    IF (SELECT COUNT(*) FROM publicidad.pieza_pais WHERE pieza_id = @piezaId) <= 1
+        SET @errores += N'- No se puede quitar el único país asociado. Para quitarlos todos, dé de baja la pieza completa.' + @nl;
  
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo modificar el país de la pieza:' + @nl + @errores;
-        THROW 52304, @errores, 1;
+        SET @errores = N'No se pudo quitar el país de la pieza:' + @nl + @errores;
+        THROW 51304, @errores, 1;
     END;
  
-    UPDATE publicidad.pieza_pais SET pais_id = @paisNuevo
-    WHERE pieza_id = @piezaId AND pais_id = @paisActual;
+    DELETE FROM publicidad.pieza_pais WHERE pieza_id = @piezaId AND pais_id = @paisId;
 END;
 GO
  
 -- ============================================================================
 -- publicidad.tarifa_publicidad
 -- ============================================================================
--- Fase y espacio no se modifican (la tarifa está atada a emisiones por esos datos)
-CREATE OR ALTER PROCEDURE publicidad.sp_tarifa_publicidad_modificacion
-    @tarifaId  INT,
-    @moneda    VARCHAR(10),
-    @importe   DECIMAL(12,2)
+CREATE OR ALTER PROCEDURE publicidad.sp_tarifa_publicidad_baja
+    @tarifaId INT
 AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
  
     IF NOT EXISTS (SELECT 1 FROM publicidad.tarifa_publicidad WHERE tarifa_id = @tarifaId)
-        SET @errores += N'- La tarifa no existe.' + @nl;
-    IF @moneda IS NULL OR @moneda NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- La moneda debe ser un código de 3 letras (ej. USD).' + @nl;
-    IF @importe IS NULL OR @importe < 0
-        SET @errores += N'- El importe debe ser mayor o igual a cero.' + @nl;
+        SET @errores += N'- La tarifa publicitaria no existe.' + @nl;
+        
+    IF EXISTS (SELECT 1 FROM publicidad.publicidad_partido WHERE tarifa_id = @tarifaId)
+        SET @errores += N'- La tarifa no se puede eliminar porque ya está siendo utilizada en asignaciones de partidos.' + @nl;
  
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo modificar la tarifa:' + @nl + @errores;
-        THROW 52305, @errores, 1;
+        SET @errores = N'No se pudo dar de baja la tarifa:' + @nl + @errores;
+        THROW 51305, @errores, 1;
     END;
  
-    UPDATE publicidad.tarifa_publicidad
-    SET moneda = UPPER(@moneda), importe = @importe
-    WHERE tarifa_id = @tarifaId;
+    DELETE FROM publicidad.tarifa_publicidad WHERE tarifa_id = @tarifaId;
 END;
 GO
  
 -- ============================================================================
 -- publicidad.tipo_cambio
 -- ============================================================================
--- Monedas y fecha no se modifican (definen la cotización); solo la tasa
-CREATE OR ALTER PROCEDURE publicidad.sp_tipo_cambio_modificacion
-    @tipoCambioId  INT,
-    @tasa          DECIMAL(18,8)
+CREATE OR ALTER PROCEDURE publicidad.sp_tipo_cambio_baja
+    @tipoCambioId INT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -216,16 +177,14 @@ BEGIN
  
     IF NOT EXISTS (SELECT 1 FROM publicidad.tipo_cambio WHERE tipo_cambio_id = @tipoCambioId)
         SET @errores += N'- El tipo de cambio no existe.' + @nl;
-    IF @tasa IS NULL OR @tasa <= 0
-        SET @errores += N'- La tasa debe ser mayor a cero.' + @nl;
  
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo modificar el tipo de cambio:' + @nl + @errores;
-        THROW 52306, @errores, 1;
+        SET @errores = N'No se pudo dar de baja el tipo de cambio:' + @nl + @errores;
+        THROW 51306, @errores, 1;
     END;
  
-    UPDATE publicidad.tipo_cambio SET tasa = @tasa WHERE tipo_cambio_id = @tipoCambioId;
+    DELETE FROM publicidad.tipo_cambio WHERE tipo_cambio_id = @tipoCambioId;
 END;
 GO
  
@@ -234,34 +193,30 @@ GO
 -- La baja solo se permite mientras el partido esta PROGRAMADO: una vez jugado, la
 -- publicidad exhibida es el registro historico para facturar a los anunciantes.
 -- ============================================================================
--- Partido, pieza, tarifa y espacio no se modifican (baja + alta)
-CREATE OR ALTER PROCEDURE publicidad.sp_publicidad_partido_modificacion
-    @publicidadId       INT,
-    @momentoEmision     DATETIME2(0),
-    @importeFacturado   DECIMAL(12,2),
-    @moneda             VARCHAR(10)
+CREATE OR ALTER PROCEDURE publicidad.sp_publicidad_partido_baja
+    @publicidadId INT
 AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @errores NVARCHAR(MAX) = N'', @nl NCHAR(2) = CHAR(13) + CHAR(10);
+    DECLARE @estadoPartido VARCHAR(20);
+    
+    SELECT @estadoPartido = p.estado 
+    FROM publicidad.publicidad_partido pp
+    JOIN torneo.partido p ON p.partido_id = pp.partido_id
+    WHERE pp.publicidad_id = @publicidadId;
  
-    IF NOT EXISTS (SELECT 1 FROM publicidad.publicidad_partido WHERE publicidad_id = @publicidadId)
-        SET @errores += N'- La publicidad del partido no existe.' + @nl;
-    IF @momentoEmision IS NULL
-        SET @errores += N'- El momento de emisión es obligatorio.' + @nl;
-    IF @importeFacturado IS NULL OR @importeFacturado < 0
-        SET @errores += N'- El importe facturado debe ser mayor o igual a cero.' + @nl;
-    IF @moneda IS NULL OR @moneda NOT LIKE '[A-Za-z][A-Za-z][A-Za-z]'
-        SET @errores += N'- La moneda debe ser un código de 3 letras (ej. USD).' + @nl;
+    IF @estadoPartido IS NULL
+        SET @errores += N'- La asignación de publicidad en el partido no existe.' + @nl;
+    ELSE IF @estadoPartido <> 'PROGRAMADO'
+        SET @errores += N'- Solo se puede eliminar la publicidad de un partido en estado PROGRAMADO.' + @nl;
  
     IF @errores <> N''
     BEGIN
-        SET @errores = N'No se pudo modificar la publicidad del partido:' + @nl + @errores;
-        THROW 52307, @errores, 1;
+        SET @errores = N'No se pudo dar de baja la publicidad del partido:' + @nl + @errores;
+        THROW 51307, @errores, 1;
     END;
  
-    UPDATE publicidad.publicidad_partido
-    SET momento_emision = @momentoEmision, importe_facturado = @importeFacturado, moneda = UPPER(@moneda)
-    WHERE publicidad_id = @publicidadId;
+    DELETE FROM publicidad.publicidad_partido WHERE publicidad_id = @publicidadId;
 END;
 GO
