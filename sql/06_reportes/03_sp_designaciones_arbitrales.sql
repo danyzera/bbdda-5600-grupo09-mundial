@@ -22,11 +22,13 @@ BEGIN
         INNER JOIN arbitraje.arbitro a
             ON a.arbitro_id = da.arbitro_id
     GROUP BY
+        a.arbitro_id,
         a.nombre,
         a.categoria,
         da.rol_arbitral
     ORDER BY
-        partidos_dirigidos DESC;
+        partidos_dirigidos DESC,
+        a.nombre;
 
 END;
 GO
