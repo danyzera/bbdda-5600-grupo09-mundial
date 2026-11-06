@@ -5,8 +5,8 @@
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
    Script      : 00_crear_bd_y_esquemas.sql
-   Objetivo    : Crear la base de datos MundialDB y sus esquemas
-                 (torneo, arbitraje, publicidad, importacion).
+   Objetivo    : Crear la base de datos MundialDB y los esquemas
+                 torneo, arbitraje, publicidad, importacion y reportes.
    ============================================================================ */
 
 USE master;
@@ -32,4 +32,6 @@ GO
 CREATE SCHEMA publicidad;
 GO
 CREATE SCHEMA importacion;
+GO
+CREATE SCHEMA reportes;
 GO
