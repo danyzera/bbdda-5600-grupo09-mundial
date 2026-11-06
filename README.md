@@ -27,9 +27,9 @@ Sistema centralizado, desarrollado íntegramente en **T-SQL sobre Microsoft SQL 
 | 1 y 2 | Informes de costos On-Premise y Cloud | Individuales (se envían por Teams) | `NULL` |
 | 3 | Diagrama de Entidad Relación | Entregada | [`docs/entrega-03_DER/`](docs/entrega-03_DER/) |
 | 4 | Instalación y configuración de SQL Server | Entregada | [`docs/entrega-04_instalacion/`](docs/entrega-04_instalacion/) |
-| 5 | Base de datos (tablas, SPs, validaciones, lógica de negocio) | En desarrollo | [`sql/`](sql/) |
-| 6 | Procesos de importación | En desarrollo | [`sql/05_importacion/`](sql/05_importacion/) |
-| 7 | Reportes | Pendiente | [`sql/06_reportes/`](sql/06_reportes/) |
+| 5 | Base de datos (tablas, SPs, validaciones, lógica de negocio) | Entregada | [`sql/`](sql/) |
+| 6 | Procesos de importación | Entregada | [`sql/05_importacion/`](sql/05_importacion/) |
+| 7 | Reportes | En desarrollo | [`sql/06_reportes/`](sql/06_reportes/) |
 | 8 | Seguridad y respaldo | Pendiente | [`sql/07_seguridad/`](sql/07_seguridad/) |
 | 9 | BI y aplicación ABM | Pendiente | [`bi/`](bi/), [`app/`](app/) |
 
