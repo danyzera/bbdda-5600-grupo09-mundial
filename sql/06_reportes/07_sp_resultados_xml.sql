@@ -30,6 +30,11 @@ BEGIN
         INNER JOIN torneo.seleccion sv
             ON sv.seleccion_id = p.seleccion_visitante_id
 
+    ORDER BY
+        p.fecha_hora_utc,
+        p.partido_id
+
     FOR XML PATH('partido'), ROOT('resultados');
+
 END;
 GO
