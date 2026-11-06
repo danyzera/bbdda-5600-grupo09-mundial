@@ -2,3 +2,4 @@ iso_pais,nombre_seleccion,confederacion,grupo,nombre_jugador,fecha_nacimiento,po
 ARG,Argentina,CONMEBOL,A,Lionel Messi,1987-06-24,DEL,Inter Miami,10,2026-05-15
 ARG,Argentina,CONMEBOL,A,Emiliano Martinez,1992-09-02,ARQ,Aston Villa,1,2026-05-15
 ESP,España,UEFA,B,Pedri,2002-11-25,MED,Barcelona,8,2026-05-18
+ZZZ,Pais Inexistente,CONMEBOL,C,Jugador Error,1995-01-01,DEL,Club Error,9,2026-05-20
