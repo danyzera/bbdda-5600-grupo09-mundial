@@ -7,7 +7,6 @@
    Script      : sp_importar_fixture_csv.sql
    Objetivo    : Importar el fixture de partidos desde archivo CSV.
    ============================================================================ */
-
 CREATE OR ALTER PROCEDURE importacion.sp_importar_fixture_csv
     @archivo NVARCHAR(260)
 AS
@@ -15,7 +14,10 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    DECLARE @importacionId INT;
+    DECLARE @importacionId INT,
+            @sql           NVARCHAR(MAX),
+            @leidos        INT,
+            @errores       INT;
 
     INSERT INTO importacion.importacion_log (origen, tipo_fuente, archivo)
     VALUES ('Importación Fixture', 'CSV', @archivo);
@@ -23,9 +25,9 @@ BEGIN
     SET @importacionId = SCOPE_IDENTITY();
 
     BEGIN TRY
-        IF OBJECT_ID('tempdb..#stg_fixture') IS NOT NULL DROP TABLE #stg_fixture;
-
-        CREATE TABLE #stg_fixture (
+        -- 1) Cargar CSV directo a una tabla cruda
+        IF OBJECT_ID('tempdb..#raw_fixture') IS NOT NULL DROP TABLE #raw_fixture;
+        CREATE TABLE #raw_fixture (
             fase VARCHAR(15),
             nombre_estadio NVARCHAR(100),
             iso_local CHAR(3),
@@ -33,78 +35,108 @@ BEGIN
             fecha_hora_local DATETIME2(0)
         );
 
-        DECLARE @sql NVARCHAR(MAX);
-        SET @sql = 'BULK INSERT #stg_fixture FROM ''' + @archivo + ''' WITH (FIRSTROW = 2, FIELDTERMINATOR = '','', ROWTERMINATOR = ''0x0D0A'', CODEPAGE = ''65001'');';
+        SET @sql = 'BULK INSERT #raw_fixture FROM ''' + REPLACE(@archivo, '''', '''''') + ''' WITH (FIRSTROW = 2, FIELDTERMINATOR = '','', ROWTERMINATOR = ''0x0D0A'', CODEPAGE = ''65001'');';
         EXEC (@sql);
 
-        DECLARE @fase VARCHAR(15), @nombre_estadio NVARCHAR(100), @iso_local CHAR(3), @iso_visitante CHAR(3), @fecha_hora_local DATETIME2(0);
+        SELECT @leidos = COUNT(*) FROM #raw_fixture;
 
-        DECLARE c_fixture CURSOR LOCAL FAST_FORWARD FOR
-        SELECT fase, nombre_estadio, iso_local, iso_visitante, fecha_hora_local FROM #stg_fixture;
+        -- 2) Volcar a Staging resolviendo claves foráneas y CALCULANDO EL UTC AL VUELO
+        IF OBJECT_ID('tempdb..#stg_fixture') IS NOT NULL DROP TABLE #stg_fixture;
+        CREATE TABLE #stg_fixture (
+            fila INT,
+            fase VARCHAR(15),
+            fecha_hora_local DATETIME2(0),
+            fecha_hora_utc DATETIME2(0), -- Nueva columna para el UTC calculado
+            sede_id INT,
+            local_id INT,
+            visitante_id INT,
+            error_desc NVARCHAR(200)
+        );
 
-        OPEN c_fixture;
-        FETCH NEXT FROM c_fixture INTO @fase, @nombre_estadio, @iso_local, @iso_visitante, @fecha_hora_local;
+        INSERT INTO #stg_fixture (fila, fase, fecha_hora_local, fecha_hora_utc, sede_id, local_id, visitante_id, error_desc)
+        SELECT 
+            ROW_NUMBER() OVER(ORDER BY (SELECT NULL)),
+            r.fase,
+            r.fecha_hora_local,
+            
+            -- CÁLCULO DEL UTC: Toma la hora local, le asigna el huso horario de la sede, y lo convierte a UTC.
+            CASE 
+                WHEN sd.huso_horario IS NOT NULL THEN 
+                    CAST(r.fecha_hora_local AT TIME ZONE sd.huso_horario AT TIME ZONE 'UTC' AS DATETIME2(0))
+                ELSE NULL 
+            END,
 
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            BEGIN TRY
-                DECLARE @sedeId INT = NULL, @seleccionLocalId INT = NULL, @seleccionVisitanteId INT = NULL, @partidoId INT = NULL;
+            sd.sede_id,
+            sl.seleccion_id,
+            sv.seleccion_id,
+            CASE 
+                WHEN sd.sede_id IS NULL THEN 'Estadio no encontrado: ' + ISNULL(r.nombre_estadio, 'NULL')
+                WHEN sl.seleccion_id IS NULL THEN 'Selección Local no encontrada para ISO: ' + ISNULL(r.iso_local, 'NULL')
+                WHEN sv.seleccion_id IS NULL THEN 'Selección Visitante no encontrada para ISO: ' + ISNULL(r.iso_visitante, 'NULL')
+                ELSE NULL 
+            END
+        FROM #raw_fixture r
+        LEFT JOIN torneo.sede sd ON sd.nombre_estadio = r.nombre_estadio
+        LEFT JOIN torneo.pais pl ON pl.codigo_iso = r.iso_local
+        LEFT JOIN torneo.seleccion sl ON sl.pais_id = pl.pais_id
+        LEFT JOIN torneo.pais pv ON pv.codigo_iso = r.iso_visitante
+        LEFT JOIN torneo.seleccion sv ON sv.pais_id = pv.pais_id;
 
-                -- Buscar Sede
-                SELECT @sedeId = sede_id FROM torneo.sede WHERE nombre_estadio = @nombre_estadio;
-                
-                -- Buscar Selecciones cruzando con la tabla país
-                SELECT @seleccionLocalId = s.seleccion_id FROM torneo.seleccion s JOIN torneo.pais p ON s.pais_id = p.pais_id WHERE p.codigo_iso = @iso_local;
-                SELECT @seleccionVisitanteId = s.seleccion_id FROM torneo.seleccion s JOIN torneo.pais p ON s.pais_id = p.pais_id WHERE p.codigo_iso = @iso_visitante;
+        -- 3) Grabar los errores de todos los registros inválidos juntos
+        INSERT INTO importacion.importacion_error (importacion_id, detalle)
+        SELECT @importacionId, CONCAT('Fila ', fila, ': ', error_desc)
+        FROM #stg_fixture
+        WHERE error_desc IS NOT NULL;
 
-                IF @sedeId IS NOT NULL AND @seleccionLocalId IS NOT NULL AND @seleccionVisitanteId IS NOT NULL
-                BEGIN
-                    -- UPSERT: Buscar si el partido ya existe
-                    SELECT @partidoId = partido_id FROM torneo.partido 
-                    WHERE fase = @fase AND seleccion_local_id = @seleccionLocalId AND seleccion_visitante_id = @seleccionVisitanteId;
+        SET @errores = @@ROWCOUNT;
 
-                    IF @partidoId IS NULL
-                    BEGIN
-                        EXEC torneo.sp_partido_alta 
-                            @fase = @fase, @sedeId = @sedeId, @seleccionLocalId = @seleccionLocalId, 
-                            @seleccionVisitanteId = @seleccionVisitanteId, @fechaHoraLocal = @fecha_hora_local, 
-                            @partidoId = @partidoId OUTPUT;
-                    END
-                    ELSE
-                    BEGIN
-                         -- TODO: Reemplazar con tu SP de modificación
-                        PRINT 'Llamar a torneo.sp_partido_modificacion';
-                    END
+        -- 4) Limpiar el Staging para dejar solo lo que está perfecto
+        DELETE FROM #stg_fixture WHERE error_desc IS NOT NULL;
 
-                    UPDATE importacion.importacion_log SET registros_leidos = registros_leidos + 1, registros_ok = registros_ok + 1 WHERE importacion_id = @importacionId;
-                END
-                ELSE
-                BEGIN
-                    DECLARE @errorMsg NVARCHAR(200) = 'Faltan datos de base: ' + 
-                        CASE WHEN @sedeId IS NULL THEN 'Estadio ' ELSE '' END + 
-                        CASE WHEN @seleccionLocalId IS NULL THEN 'Local ' ELSE '' END + 
-                        CASE WHEN @seleccionVisitanteId IS NULL THEN 'Visitante' ELSE '' END;
-                    INSERT INTO importacion.importacion_error (importacion_id, detalle) VALUES (@importacionId, @errorMsg);
-                    UPDATE importacion.importacion_log SET registros_leidos = registros_leidos + 1, registros_error = registros_error + 1 WHERE importacion_id = @importacionId;
-                END
-            END TRY
-            BEGIN CATCH
-                INSERT INTO importacion.importacion_error (importacion_id, detalle) VALUES (@importacionId, ERROR_MESSAGE());
-                UPDATE importacion.importacion_log SET registros_leidos = registros_leidos + 1, registros_error = registros_error + 1 WHERE importacion_id = @importacionId;
-            END CATCH;
+        -- 5) Bloque Transaccional: UPSERT (Modificación y Alta) en bloque
+        BEGIN TRAN;
 
-            FETCH NEXT FROM c_fixture INTO @fase, @nombre_estadio, @iso_local, @iso_visitante, @fecha_hora_local;
-        END;
+            -- MODIFICACIÓN (Actualiza sede, horario local y horario UTC si el partido ya existía)
+            UPDATE p
+            SET p.sede_id = s.sede_id,
+                p.fecha_hora_local = s.fecha_hora_local,
+                p.fecha_hora_utc = s.fecha_hora_utc
+            FROM torneo.partido p
+            JOIN #stg_fixture s
+              ON p.fase = s.fase 
+             AND p.seleccion_local_id = s.local_id 
+             AND p.seleccion_visitante_id = s.visitante_id;
 
-        CLOSE c_fixture; DEALLOCATE c_fixture;
+            -- ALTA (Inserta los partidos que no existen incluyendo el UTC)
+            INSERT INTO torneo.partido (fase, sede_id, seleccion_local_id, seleccion_visitante_id, fecha_hora_local, fecha_hora_utc, estado)
+            SELECT s.fase, s.sede_id, s.local_id, s.visitante_id, s.fecha_hora_local, s.fecha_hora_utc, 'PROGRAMADO'
+            FROM #stg_fixture s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM torneo.partido p
+                WHERE p.fase = s.fase 
+                  AND p.seleccion_local_id = s.local_id 
+                  AND p.seleccion_visitante_id = s.visitante_id
+            );
 
-        DECLARE @Errores INT;
-        SELECT @Errores = registros_error FROM importacion.importacion_log WHERE importacion_id = @importacionId;
-        UPDATE importacion.importacion_log SET estado = CASE WHEN @Errores = 0 THEN 'OK' ELSE 'PARCIAL' END, fecha_fin = SYSDATETIME() WHERE importacion_id = @importacionId;
+        COMMIT;
+
+        -- 6) Actualizar el resumen del log
+        UPDATE importacion.importacion_log
+        SET registros_leidos = @leidos,
+            registros_ok     = @leidos - @errores,
+            registros_error  = @errores,
+            estado           = CASE WHEN @errores = 0 THEN 'OK' ELSE 'PARCIAL' END,
+            fecha_fin        = SYSDATETIME()
+        WHERE importacion_id = @importacionId;
 
     END TRY
     BEGIN CATCH
-        UPDATE importacion.importacion_log SET estado = 'ERROR', fecha_fin = SYSDATETIME() WHERE importacion_id = @importacionId;
+        IF XACT_STATE() <> 0 ROLLBACK;
+
+        UPDATE importacion.importacion_log 
+        SET estado = 'ERROR', fecha_fin = SYSDATETIME() 
+        WHERE importacion_id = @importacionId;
+
         THROW;
     END CATCH;
 END;

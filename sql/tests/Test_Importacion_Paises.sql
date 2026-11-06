@@ -67,12 +67,16 @@ PRINT 'ZONA DE LIMPIEZA (TEARDOWN) - Ejecutar para repetir el test';
 PRINT '====================================================================';
 
 /*
-
 BEGIN TRY
     PRINT 'Limpiando datos de negocio (Países insertados por el CSV)...';
-    -- Borramos por los códigos ISO que sabemos que vienen en el archivo de prueba
-    DELETE FROM torneo.pais 
-    WHERE codigo_iso IN ('ARG', 'BRA', 'ESP', 'XX');
+
+    -- Borrado seguro: Solo elimina los países si NO están siendo usados por otras tablas
+    DELETE p
+    FROM torneo.pais p
+    WHERE p.codigo_iso IN ('ARG', 'BRA', 'ESP', 'XX')
+      AND NOT EXISTS (SELECT 1 FROM arbitraje.arbitro a WHERE a.pais_id = p.pais_id)
+      AND NOT EXISTS (SELECT 1 FROM torneo.seleccion s WHERE s.pais_id = p.pais_id)
+      AND NOT EXISTS (SELECT 1 FROM torneo.sede sd WHERE sd.pais_id = p.pais_id);
 
     PRINT 'Limpiando logs de la última ejecución...';
     DECLARE @ultimoId INT = (SELECT MAX(importacion_id) FROM importacion.importacion_log WHERE origen = 'Importación Países');
@@ -89,5 +93,4 @@ BEGIN CATCH
     PRINT 'Error durante la limpieza: ' + ERROR_MESSAGE();
 END CATCH;
 GO
-
 */
