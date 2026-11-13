@@ -35,3 +35,5 @@ CREATE SCHEMA importacion;
 GO
 CREATE SCHEMA reportes;
 GO
+CREATE SCHEMA bi;
+GO
