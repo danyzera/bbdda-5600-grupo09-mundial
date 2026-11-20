@@ -77,16 +77,3 @@ BEGIN
     END CATCH;
 END;
 GO
-EXEC master.dbo.xp_fileexist 'C:\Temp\referees.csv';
-EXEC importacion.sp_importar_arbitros @archivo = 'C:\Temp\referees.csv';
-SELECT * FROM torneo.pais;
-SELECT COUNT(*) FROM arbitraje.arbitro;
-
--- Revisa el resumen general de la importación (registros leídos, OK y con error)
-SELECT * FROM importacion.importacion_log;
-
--- Revisa si hubo filas con errores específicos y su detalle
-SELECT * FROM importacion.importacion_error;
-
--- Revisa los árbitros ya cargados en la tabla definitiva
-SELECT * FROM arbitraje.arbitro;
