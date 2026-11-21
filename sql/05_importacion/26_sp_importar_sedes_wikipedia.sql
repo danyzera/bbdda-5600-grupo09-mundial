@@ -1,8 +1,13 @@
-/*
-    Universidad Nacional de La Matanza - Bases de Datos Aplicada (3641)
-    Grupo: <completar integrantes>        Fecha: <completar>
-    Objetivo: Importar las sedes del Mundial 2026 desde sedes_wikipedia.csv (scraping de Wikipedia,
-              tabla "Venues" del articulo "2026 FIFA World Cup").
+/* ============================================================================
+    Universidad : Universidad Nacional de La Matanza (UNLaM)
+    Materia     : 3641 - Bases de Datos Aplicada
+    Comision    : Com:5600       Grupo:09
+    Integrantes : Gauto, Andino, Garbaccio, Dugo
+    Fecha       : 06/10/2026
+    Script      : 26_sp_importar_sedes_wikipedia.sql
+    Objetivo    : Importar las sedes del Mundial 2026 desde sedes_wikipedia.csv (scraping de Wikipedia,
+                tabla "Venues" del articulo "2026 FIFA World Cup").
+    Notas:
       - Upsert por nombre FIFA del estadio (el que va entre parentesis, ej. "Mexico City Stadium"),
         el mismo criterio que la importacion desde JSON, asi no se duplican sedes.
       - Pais, huso horario y coordenadas no estan en la fuente: se completan con una tabla de mapeo
@@ -10,7 +15,8 @@
       - Importacion parcial: filas invalidas -> importacion_error; el resto se carga.
       - Usa torneo.sp_sede_alta / torneo.sp_sede_modificacion (Entrega 5). Sin cursor.
       - SQL dinamico solo para BULK INSERT (la ruta del archivo debe ser literal).
-*/
+   ============================================================================ */
+
 USE MundialDB;
 GO
 

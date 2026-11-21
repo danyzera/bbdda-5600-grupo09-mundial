@@ -4,7 +4,7 @@
    Comision    : Com:5600       Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : sp_importar_fixture_csv.sql
+   Script      : 23_sp_importar_fixture_csv.sql
    Objetivo    : Importar el fixture de partidos desde archivo CSV.
    ============================================================================ */
 CREATE OR ALTER PROCEDURE importacion.sp_importar_fixture_csv

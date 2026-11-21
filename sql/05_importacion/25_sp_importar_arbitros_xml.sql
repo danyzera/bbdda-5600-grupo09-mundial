@@ -4,7 +4,7 @@
    Comision    : Com:5600       Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : sp_importar_arbitros_xml.sql
+   Script      : 25_sp_importar_arbitros_xml.sql
    ============================================================================ */
 
 CREATE OR ALTER PROCEDURE importacion.sp_importar_arbitros_xml

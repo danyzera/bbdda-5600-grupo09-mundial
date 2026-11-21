@@ -4,7 +4,7 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 05_sp_matriz_primetime.sql
+   Script      : 32_sp_matriz_primetime.sql
    Objetivo    : Matriz de Prime Time por mercado (PIVOT Dinámico).
    ============================================================================ */
 CREATE OR ALTER PROCEDURE reportes.sp_matriz_primetime

@@ -1,3 +1,12 @@
+/* ============================================================================
+   Universidad : Universidad Nacional de La Matanza (UNLaM)
+   Materia     : 3641 - Bases de Datos Aplicada
+   Comision    : Com:5600       Grupo:09
+   Integrantes : Gauto, Andino, Garbaccio, Dugo
+   Fecha       : 06/10/2026
+   Script      : 27_sp_importar_arbitros.sql
+   ============================================================================ */
+
 USE MundialDB;
 GO
 
@@ -11,7 +20,7 @@ BEGIN
     DECLARE @fecha_inicio DATETIME2(0) = SYSDATETIME();
     DECLARE @total_leidos INT = 0, @registros_ok INT = 0;
 
-    -- Staging igual a tu CSV referees.csv
+    -- Staging
     CREATE TABLE #StagingArbitro (
         key_id VARCHAR(MAX),
         referee_id VARCHAR(MAX),
@@ -30,7 +39,7 @@ BEGIN
     SET @importacion_id = SCOPE_IDENTITY();
 
     BEGIN TRY
-        -- 1. BULK que ya te funciona (el que viste con SINGLE_CLOB)
+        -- 1. BULK
         DECLARE @sql NVARCHAR(MAX) = N'BULK INSERT #StagingArbitro FROM ''' + REPLACE(@archivo,'''','''''') + N''' WITH (FIRSTROW=2, FIELDTERMINATOR='','', ROWTERMINATOR=''\n'', CODEPAGE=''65001'', TABLOCK);';
         EXEC sp_executesql @sql;
         SET @total_leidos = @@ROWCOUNT;

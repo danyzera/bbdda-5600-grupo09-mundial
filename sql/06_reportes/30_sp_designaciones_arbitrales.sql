@@ -4,7 +4,7 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 03_sp_designaciones_arbitrales.sql
+   Script      : 30_sp_designaciones_arbitrales.sql
    Objetivo    : Historial de designaciones arbitrales.
    ============================================================================ */
 
