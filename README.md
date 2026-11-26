@@ -31,7 +31,7 @@ Sistema centralizado, desarrollado íntegramente en **T-SQL sobre Microsoft SQL 
 | 6 | Procesos de importación | Entregada | [`sql/05_importacion/`](sql/05_importacion/) |
 | 7 | Reportes | Entregada | [`sql/06_reportes/`](sql/06_reportes/) |
 | 8 | Seguridad y respaldo | Entregada | [`sql/07_seguridad/`](sql/07_seguridad/) y [`docs/entrega-08_seguridad-backup/`](docs/entrega-08_seguridad-backup/) |
-| 9 | BI y aplicación ABM | Pendiente | [`bi/`](bi/), [`app/`](app/), y [`docs/entrega-09_bi-app/`](docs/entrega-09_bi-app/) |
+| 9 | BI y aplicación ABM | Entregada | [`bi/`](bi/), [`app/`](app/), y [`docs/entrega-09_bi-app/`](docs/entrega-09_bi-app/) |
 
 ## Estructura del repositorio
 
