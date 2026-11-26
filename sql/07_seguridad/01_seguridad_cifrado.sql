@@ -123,6 +123,9 @@ BEGIN
     WHERE informe_id = @informeId;
 END;
 GO
+
+/*
+
 DECLARE @nuevoId INT;
 
 --ejemplo
@@ -187,3 +190,5 @@ SELECT
     )) AS detalle_descifrado
 FROM arbitraje.informe_arbitral;
 GO
+
+*/
