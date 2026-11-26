@@ -132,7 +132,6 @@ BEGIN
 
             BEGIN TRY
                 SET @sedeId = NULL;
-                -- ASUNCION: columnas sede_id y nombre_estadio en torneo.sede
                 SELECT @sedeId = sede_id FROM torneo.sede WHERE nombre_estadio = @estadio;
 
                 IF @sedeId IS NULL
@@ -141,10 +140,9 @@ BEGIN
                          @capacidad = @cap, @husoHorario = @huso,
                          @latitud = @lat, @longitud = @lon, @sedeId = @sedeId OUTPUT;
                 ELSE
-                    -- ASUNCION: nombre y parametros de tu SP de modificacion; ajustar si difieren
-                    /*EXEC torneo.sp_sede_modificacion
+                    EXEC torneo.sp_sede_modificacion
                          @sedeId = @sedeId, @paisId = @paisId, @nombreEstadio = @estadio, @ciudad = @ciudad,
-                         @capacidad = @cap, @husoHorario = @huso, @latitud = @lat, @longitud = @lon;*/
+                         @capacidad = @cap, @husoHorario = @huso, @latitud = @lat, @longitud = @lon;
 
                 SET @ok += 1;
             END TRY
