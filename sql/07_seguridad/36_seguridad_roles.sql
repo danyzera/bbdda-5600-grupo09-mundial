@@ -48,8 +48,9 @@ TO administrador;
 GO
 
 -- CONSULTA: lectura de torneo y ejecucion de reportes.
--- Las columnas cifradas se ven como VARBINARY (no tiene acceso a la clave).
-GRANT SELECT ON SCHEMA::torneo
+
+-- Para la app BI
+GRANT SELECT ON SCHEMA::bi
 TO consulta;
 GO
 

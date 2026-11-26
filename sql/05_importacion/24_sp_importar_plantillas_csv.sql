@@ -4,7 +4,7 @@
    Comision    : Com:5600       Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : sp_importar_plantillas_csv.sql
+   Script      : 24_sp_importar_plantillas_csv.sql
    Objetivo    : Importar selecciones, jugadores y convocatorias desde CSV (Set-Based).
    ============================================================================ */
 CREATE OR ALTER PROCEDURE importacion.sp_importar_plantillas_csv

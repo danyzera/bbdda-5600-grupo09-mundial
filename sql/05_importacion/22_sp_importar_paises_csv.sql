@@ -4,7 +4,7 @@
    Comision    : Com:5600       Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : sp_importar_paises_csv.sql
+   Script      : 22_sp_importar_paises_csv.sql
    Objetivo    : Importar países desde archivo CSV utilizando Set-Based UPSERT.
    ============================================================================ */
 CREATE OR ALTER PROCEDURE importacion.sp_importar_paises_csv

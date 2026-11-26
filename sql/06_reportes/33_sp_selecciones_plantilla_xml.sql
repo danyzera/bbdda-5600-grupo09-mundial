@@ -4,7 +4,7 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 06_sp_selecciones_plantilla_xml.sql
+   Script      : 33_sp_selecciones_plantilla_xml.sql
    Objetivo    : Selecciones con convocados en formato XML.
    ============================================================================ */
 

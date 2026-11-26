@@ -70,3 +70,9 @@ Con el partido EN_CURSO, se habilita la carga de eventos dinámicos. Estos SPs t
 * `torneo.sp_partido_finalizar` (Crítico - Cierre): Cuando el árbitro dictamina el final, se ejecuta este SP. En lugar de recibir los goles tipeados por un usuario, el SP cuenta los registros generados por `sp_gol_registrar` para auto-calcular el resultado final. Cambia el estado a FINALIZADO e internamente avanza el contador de partidos_cumplidos para aquellos jugadores que arrastraban suspensiones.
 
 > **Conclusión**: en síntesis, se acaba de describir la *cohesión transaccional*. No se puede iniciar un partido sin designaciones, pauta ni alineaciones (`sp_partido_iniciar` actúa de barrera). No se pueden cargar eventos si el partido no inició (los SPs de incidencias requieren estado EN_CURSO). No se puede finalizar un partido si no se consolidan primero los datos de la etapa en vivo (`sp_partido_finalizar` recolecta lo sucedido).
+
+# Vistas
+
+## [6-11-2026]
+
+Las plataformas de BI no están optimizadas para ingerir flujos de datos a través de Stored Procedures (especialmente si escupen XML). Las vistas resolverán la lógica de tablas en el motor de base de datos, exponiendo conjuntos de datos planos, limpios y directamente consumibles por la plataforma de BI.

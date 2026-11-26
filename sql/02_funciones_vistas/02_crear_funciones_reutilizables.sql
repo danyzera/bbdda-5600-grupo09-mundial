@@ -5,7 +5,7 @@
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 17/10/2026
    Script      : 02_crear_funciones_reutilizables.sql
-   Objetivo    : Funciones que retornan valores reutilizables, por ejemplo, en
+   Descripción : Funciones que retornan valores reutilizables, por ejemplo, en
                  la implementación de los procedimientos almacenados. Al degradarse
                  la performance en caso de no ser de una única línea de retorno, se
                  fomenta que sean inliners para que el query optimizer no tenga
@@ -80,9 +80,3 @@ RETURN
         )
 );
 GO
-
--- CONTINUAR CON LAS DEMÁS
--- torneo.obtener_tabla_grupo
--- torneo.obtener_goleadores_global (quizás debería ser una vista)
--- torneo.obtener_resultado_en_vivo?
--- publicidad.obtener_cotizacion?

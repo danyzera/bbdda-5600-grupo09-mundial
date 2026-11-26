@@ -337,8 +337,6 @@ EXEC torneo.sp_partido_alta @fase='GRUPOS', @sedeId=@sede_azteca, @seleccionLoca
 
 EXEC torneo.sp_partido_alta @fase='GRUPOS', @sedeId=@sede_metlife, @seleccionLocalId=@usa, @seleccionVisitanteId=@arg, @fechaHoraLocal='2026-06-15 21:00:00', @partidoId=@p_id OUTPUT;
 
-UPDATE torneo.partido SET estado = 'FINALIZADO' WHERE partido_id = @p_id;
-
 EXEC torneo.sp_partido_alta @fase='GRUPOS', @sedeId=@sede_sofi, @seleccionLocalId=@bra, @seleccionVisitanteId=@fra, @fechaHoraLocal='2026-06-18 16:00:00', @partidoId=@p_id OUTPUT;
 
 EXEC torneo.sp_partido_alta @fase='GRUPOS', @sedeId=@sede_akron, @seleccionLocalId=@esp, @seleccionVisitanteId=@jpn, @fechaHoraLocal='2026-06-20 20:00:00', @partidoId=@p_id OUTPUT;
@@ -447,9 +445,6 @@ BEGIN
             @minuto = 35, 
             @motivo = N'Falta táctica', 
             @tarjetaId = @tarjeta_id OUTPUT;
-            
-        -- Volvemos el partido a PROGRAMADO o FINALIZADO según corresponda
-        UPDATE torneo.partido SET estado = 'FINALIZADO' WHERE partido_id = @partido_target;
     END;
 END;
 GO

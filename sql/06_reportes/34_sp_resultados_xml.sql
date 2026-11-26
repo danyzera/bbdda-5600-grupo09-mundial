@@ -4,7 +4,7 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 07_sp_resultados_xml.sql
+   Script      : 34_sp_resultados_xml.sql
    Objetivo    : Resultados de encuentros en XML.
    ============================================================================ */
 

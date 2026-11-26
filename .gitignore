@@ -35,3 +35,8 @@ obj/
 Thumbs.db
 .idea/
 .vscode/
+
+# ----------- .NET compilacion -----------
+
+**/bin/
+**/obj/

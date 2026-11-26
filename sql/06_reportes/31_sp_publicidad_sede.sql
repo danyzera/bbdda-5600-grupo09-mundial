@@ -4,7 +4,7 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 04_sp_publicidad_sede.sql
+   Script      : 31_sp_publicidad_sede.sql
    Objetivo    : Ocupación publicitaria por sede y partido.
    ============================================================================ */
 

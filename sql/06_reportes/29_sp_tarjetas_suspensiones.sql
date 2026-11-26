@@ -4,7 +4,7 @@
    Comision    : Com:5600      Grupo:09
    Integrantes : Gauto, Andino, Garbaccio, Dugo
    Fecha       : 06/10/2026
-   Script      : 02_sp_tarjetas_suspensiones.sql
+   Script      : 29_sp_tarjetas_suspensiones.sql
    Objetivo    : Tarjetas por selección y jugador con suspensiones.
    ============================================================================ */
 
