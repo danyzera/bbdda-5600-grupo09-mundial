@@ -12,7 +12,7 @@ depende de **esta** base de datos y de la configuración de SQL Server.
 
 ```
 Metabase  ──TCP/IP (puerto fijo)──▶  SQL Server  ──▶  MundialDB
-            login_bi / usr_bi                          esquema bi (solo vistas)
+            login_metabase / usr_metabase              esquema bi (solo vistas)
 ```
 
 - Metabase usa un **login SQL dedicado** que solo pertenece al rol `consulta`.
@@ -56,15 +56,15 @@ La contraseña la define quien instale el sistema y **no se versiona** (el repos
 ```sql
 USE master;
 GO
-IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'login_bi')
-    CREATE LOGIN login_bi WITH PASSWORD = '<CONTRASEÑA>', CHECK_POLICY = ON;
+IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'login_metabase')
+    CREATE LOGIN login_metabase WITH PASSWORD = '<CONTRASEÑA>', CHECK_POLICY = ON;
 GO
 USE MundialDB;
 GO
-IF DATABASE_PRINCIPAL_ID(N'usr_bi') IS NULL
-    CREATE USER usr_bi FOR LOGIN login_bi;
-IF IS_ROLEMEMBER(N'rol_consulta', N'usr_bi') = 0
-    ALTER ROLE rol_consulta ADD MEMBER usr_bi;
+IF DATABASE_PRINCIPAL_ID(N'usr_metabase') IS NULL
+    CREATE USER usr_metabase FOR LOGIN login_metabase;
+IF IS_ROLEMEMBER(N'consulta', N'usr_metabase') = 0
+    ALTER ROLE consulta ADD MEMBER usr_metabase;
 GO
 ```
 
@@ -75,7 +75,7 @@ Notas:
 
 **Verificación** (con un usuario administrador, impersonando al usuario de BI):
 ```sql
-EXECUTE AS USER = 'usr_bi';
+EXECUTE AS USER = 'usr_metabase';
 SELECT TOP (1) * FROM bi.vw_partido;      -- debe devolver filas
 SELECT TOP (1) * FROM torneo.jugador;     -- debe fallar con error 229 (permiso denegado)
 REVERT;
@@ -91,4 +91,4 @@ REVERT;
 | Port | El puerto fijo del punto 3.1 |
 | Database name | `MundialDB` |
 | Instance name | Vacío (se conecta por puerto) |
-| Username / Password | `login_bi` y la contraseña definida en 3.4 |
+| Username / Password | `login_metabase` y la contraseña definida en 3.4 |
