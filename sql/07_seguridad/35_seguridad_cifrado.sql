@@ -14,9 +14,22 @@ GO
 /*SELECT COUNT(*) AS TotalInformes 
 FROM arbitraje.informe_arbitral;
 GO*/
---modificamos la tabla para que acepte cifrado
-ALTER TABLE arbitraje.informe_arbitral
-ALTER COLUMN detalle VARBINARY(MAX) NOT NULL;
+
+-- modificamos la tabla para que acepte cifrado.
+-- Detalle a tener en cuenta: ALTER COLUMN no puede convertir NVARCHAR a VARBINARY (error 257), asi que se
+-- reemplaza la columna. Solo si todavia es de texto (asi se puede re-ejecutar).
+IF EXISTS (SELECT 1 FROM sys.columns
+           WHERE object_id = OBJECT_ID(N'arbitraje.informe_arbitral')
+             AND name = N'detalle'
+             AND TYPE_NAME(user_type_id) <> N'varbinary')
+BEGIN
+    -- Sin la frase clave no se pueden cifrar filas ya cargadas en texto plano.
+    IF EXISTS (SELECT 1 FROM arbitraje.informe_arbitral)
+        THROW 50210, N'No se puede cifrar: informe_arbitral ya tiene filas en texto plano. Migrarlas antes.', 1;
+
+    ALTER TABLE arbitraje.informe_arbitral DROP COLUMN detalle;
+    ALTER TABLE arbitraje.informe_arbitral ADD detalle VARBINARY(MAX) NOT NULL;
+END;
 GO
 --modificamos los sp para que acepte cifrado
 CREATE OR ALTER PROCEDURE arbitraje.sp_informe_arbitral_alta
