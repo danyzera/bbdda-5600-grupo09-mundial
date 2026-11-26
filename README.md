@@ -66,7 +66,7 @@ Sistema centralizado, desarrollado íntegramente en **T-SQL sobre Microsoft SQL 
 
 **Pasos**
 
-1. Clonar el repositorio y abrir `sql/<nombre>.ssmssln` en SSMS.
+1. Abrir los scripts en SSMS.
 2. Ejecutar los scripts **en el orden indicado por carpeta y prefijo numérico** (de `01_estructura` a `08_seed`); puede valerse del archivo por lotes proveido en el directorio `sql/`. Los scripts verifican la existencia de los objetos antes de crear o borrar, por lo que pueden ejecutarse más de una vez.
 
 **Orden de ejecución completo**
